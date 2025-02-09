@@ -8,7 +8,7 @@ class AuthService {
     validateStatus: (status) => status != null && status < 500, // Accept all status codes below 500
   ));
 
-  static Future login(String username, String password) async {
+  static Future<bool> login(String username, String password) async {
     final url = '${Config.baseUrl}/login';
     final Map<String, String> body = {
       'username': username,
@@ -16,21 +16,19 @@ class AuthService {
     };
 
     try {
-    
       Response response = await dio.post(
         url,
         data: body,
       );
 
       if (response.statusCode == 200) {
-        return response.data;
+        return true; // Return true when login is successful
       } else {
-        return false;
+        return false; // Return false when login fails
       }
-
-    
     } catch (e) {
       print(e.toString());
+      return false; // Return false in case of an error
     }
   }
 }
