@@ -4,9 +4,9 @@ class CurvedPatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.1)
+      ..color = const Color.fromARGB(255, 39, 31, 31).withOpacity(0.1)
       ..style = PaintingStyle.fill;
-
+    
     final path = Path();
     path.moveTo(size.width * 0.7, 0);
     path.quadraticBezierTo(
@@ -24,7 +24,7 @@ class CurvedPatternPainter extends CustomPainter {
     path.lineTo(size.width, size.height);
     path.lineTo(size.width, 0);
     path.close();
-
+    
     canvas.drawPath(path, paint);
   }
 

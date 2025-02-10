@@ -57,6 +57,7 @@ from .serializers import UserSerializer
 #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
 @csrf_exempt
 def login(request):
     """
@@ -162,7 +163,7 @@ def signup_initiate(request):
         email = request.data['email']
         username = request.data['username']
 
-        # ✅ Check for existing email and username
+        #  Check for existing email and username
         if User.objects.filter(email=email).exists():
             return Response(
                 {'error': 'Email is already in use.'},
@@ -175,10 +176,10 @@ def signup_initiate(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # ✅ Generate OTP
+        # Generate OTP
         otp = generate_otp()
 
-        # ✅ Store OTP and user data in cache
+        # Store OTP and user data in cache
         cache_key = f"signup_otp_{email}"
         cache_data = {
             'otp': otp,
@@ -187,7 +188,7 @@ def signup_initiate(request):
         }
         cache.set(cache_key, cache_data, timeout=600)  # OTP valid for 10 minutes
 
-        # ✅ Send OTP via email
+        # Send OTP via email
         if not send_otp_email(email, otp):
             return Response(
                 {'error': 'Failed to send OTP email'},

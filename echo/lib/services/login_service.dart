@@ -9,7 +9,7 @@ class AuthService {
   ));
 
   static Future<bool> login(String username, String password) async {
-    final url = '${Config.baseUrl}/login';
+    final url = '${Config.baseUrl}/login/';
     final Map<String, String> body = {
       'username': username,
       'password': password,

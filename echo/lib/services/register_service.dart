@@ -9,7 +9,7 @@ class AuthService {
   ));
 
   static Future<bool> register(String username, String password, String email) async {
-    final url = '${Config.baseUrl}/signup';
+    final url = '${Config.baseUrl}/signup/initiate/';
     final Map<String, String> body = {
       'username': username,
       'password': password,
@@ -27,7 +27,7 @@ class AuthService {
       
       print("Response Headers: ${response.headers}");
 
-      if (response.statusCode == 201) {
+      if (response.statusCode == 200) {
         return true; // Return true when registration is successful
       } else {
         return false; // Return false when registration fails

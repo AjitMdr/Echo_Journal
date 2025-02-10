@@ -4,7 +4,7 @@ class HomePage extends StatelessWidget {
   final String username; // Add a field to accept the username
 
   // Constructor to accept the username
-  const HomePage({Key? key, required this.username}) : super(key: key);
+  const HomePage({super.key, required this.username});
 
   @override
   Widget build(BuildContext context) {
