@@ -15,6 +15,23 @@ class User(AbstractUser):
     )
     phone_number = models.CharField(max_length=15, blank=True, null=True)
 
+    # Fix reverse accessor conflict for groups and user_permissions
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='custom_user_groups',  # Custom related_name
+        blank=True,
+        help_text='The groups this user belongs to.',
+        related_query_name='user'
+    )
+
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='custom_user_permissions',  # Custom related_name
+        blank=True,
+        help_text='Specific permissions for this user.',
+        related_query_name='user'
+    )
+
     REQUIRED_FIELDS = ['username']
     USERNAME_FIELD = 'email'
 

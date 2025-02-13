@@ -40,9 +40,10 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
+    'accounts'
 ]
 
-
+AUHT_USER_MODEL = 'accounts.user'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -86,9 +87,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'postgres',        # Replace with your database name
         'USER': 'postgres',        # Replace with your database user
-        'PASSWORD': '1234',# Replace with your database password
+        'PASSWORD': '1234',        # Replace with your database password
         'HOST': 'localhost',           # Set to 'localhost' if PostgreSQL is on your local machine
-        'PORT': '5433',                # Default PostgreSQL port
+        'PORT': '5432',                # Default PostgreSQL port
     }
 }
 

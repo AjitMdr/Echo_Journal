@@ -7,6 +7,6 @@ class AppStyles {
   ];
   
   static final inputDecoration = InputDecoration(
-    // ... (input decoration code)
+
   );
 }

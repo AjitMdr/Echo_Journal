@@ -8,7 +8,7 @@ class AuthService {
     validateStatus: (status) => status != null && status < 500, // Accept all status codes below 500
   ));
 
-  static Future<bool> register(String username, String password, String email) async {
+  static Future<Map<String, dynamic>> register(String username, String password, String email) async {
     final url = '${Config.baseUrl}/signup/initiate/';
     final Map<String, String> body = {
       'username': username,
@@ -22,19 +22,20 @@ class AuthService {
         data: body,
       );
 
-      // Print the response details for debugging
+      // Debugging logs
       print("Response Status Code: ${response.statusCode}");
-      
-      print("Response Headers: ${response.headers}");
+      print("Response Data: ${response.data}");
 
-      if (response.statusCode == 200) {
-        return true; // Return true when registration is successful
-      } else {
-        return false; // Return false when registration fails
-      }
+      return {
+        'success': response.statusCode == 200,
+        'data': response.data,
+      };
     } catch (e) {
       print("Error: ${e.toString()}");
-      return false; // Return false in case of an error
+      return {
+        'success': false,
+        'error': 'Network error. Please try again.',
+      };
     }
   }
 }

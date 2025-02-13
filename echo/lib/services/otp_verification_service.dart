@@ -8,7 +8,13 @@ class AuthService {
     validateStatus: (status) => status != null && status < 500,
   ));
 
-  // Login method you provided
+  static void _debugRequest(
+      String method, String url, Map<String, String> body) {
+    print('[$method] Request to: $url');
+    print('Body: $body');
+  }
+
+  // Login method
   static Future<bool> login(String username, String password) async {
     final url = '${Config.baseUrl}/signup/initiate/';
     final Map<String, String> body = {
@@ -16,19 +22,16 @@ class AuthService {
       'password': password,
     };
 
-    try {
-      Response response = await dio.post(
-        url,
-        data: body,
-      );
+    _debugRequest('POST', url, body);
 
-      if (response.statusCode == 200) {
-        return true;
-      } else {
-        return false;
-      }
+    try {
+      Response response = await dio.post(url, data: body);
+
+      print('Response: ${response.statusCode} - ${response.data}');
+
+      return response.statusCode == 200;
     } catch (e) {
-      print(e.toString());
+      print('Login error: ${e.toString()}');
       return false;
     }
   }
@@ -41,23 +44,19 @@ class AuthService {
       'otp': otp,
     };
 
-    try {
-      Response response = await dio.post(
-        url,
-        data: body,
-      );
+    _debugRequest('POST', url, body);
 
-      if (response.statusCode == 201) {
-        // Save token if provided in response
-        if (response.data['token'] != null) {
-          // You can implement token storage here
-          // await SecureStorage.saveToken(response.data['token']);
-        }
+    try {
+      Response response = await dio.post(url, data: body);
+
+      print('Response: ${response.statusCode} - ${response.data}');
+
+      if (response.statusCode == 201 && response.data['token'] != null) {
+        // You can implement token storage here
+        // await SecureStorage.saveToken(response.data['token']);
         return true;
-      } else {
-        print('Verification failed: ${response.data['error']}');
-        return false;
       }
+      return false;
     } catch (e) {
       print('OTP verification error: ${e.toString()}');
       return false;
@@ -66,23 +65,19 @@ class AuthService {
 
   // Resend OTP method
   static Future<bool> resendOTP(String email) async {
-    final url = '${Config.baseUrl}/resend-otp/';
+    final url = '${Config.baseUrl}/resend_otp/';
     final Map<String, String> body = {
       'email': email,
     };
 
-    try {
-      Response response = await dio.post(
-        url,
-        data: body,
-      );
+    _debugRequest('POST', url, body);
 
-      if (response.statusCode == 200) {
-        return true;
-      } else {
-        print('Resend OTP failed: ${response.data['error']}');
-        return false;
-      }
+    try {
+      Response response = await dio.post(url, data: body);
+
+      print('Response: ${response.statusCode} - ${response.data}');
+
+      return response.statusCode == 200;
     } catch (e) {
       print('Resend OTP error: ${e.toString()}');
       return false;
@@ -90,7 +85,8 @@ class AuthService {
   }
 
   // Register method
-  static Future<bool> register(String username, String password, String email) async {
+  static Future<bool> register(
+      String username, String password, String email) async {
     final url = '${Config.baseUrl}/register/';
     final Map<String, String> body = {
       'username': username,
@@ -98,18 +94,14 @@ class AuthService {
       'email': email,
     };
 
-    try {
-      Response response = await dio.post(
-        url,
-        data: body,
-      );
+    _debugRequest('POST', url, body);
 
-      if (response.statusCode == 201) {
-        return true;
-      } else {
-        print('Registration failed: ${response.data['error']}');
-        return false;
-      }
+    try {
+      Response response = await dio.post(url, data: body);
+
+      print('Response: ${response.statusCode} - ${response.data}');
+
+      return response.statusCode == 201;
     } catch (e) {
       print('Registration error: ${e.toString()}');
       return false;

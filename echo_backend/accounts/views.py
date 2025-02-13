@@ -43,6 +43,25 @@ from django.http import JsonResponse
 from rest_framework.authtoken.models import Token
 from .serializers import UserSerializer
 
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+
+#imports for forgot 
+from django.core.mail import send_mail
+from django.conf import settings
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from django.utils import timezone
+from datetime import timedelta
+
+from django.contrib.auth.models import User
+
+#for reset
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from django.contrib.auth.models import User
+
+from django.contrib.auth.hashers import make_password
 
 @api_view(['POST'])
 # def signup(request):
@@ -211,7 +230,6 @@ def signup_initiate(request):
         )
 
 # ---------- VERIFY OTP & SIGNUP ----------
-
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def verify_otp_and_signup(request):
@@ -275,6 +293,253 @@ def verify_otp_and_signup(request):
         return Response(
             {
                 'error': 'An error occurred during signup completion',
+                'details': str(e)
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    
+
+    
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def resend_otp(request):
+    try:
+        email = request.data.get('email')
+        
+        if not email:
+            return Response(
+                {'error': 'Email is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        cache_key = f"signup_otp_{email}"
+        cached_data = cache.get(cache_key)
+
+        if not cached_data:
+            return Response(
+                {'error': 'No OTP request found for this email. Please initiate signup again.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Generate new OTP
+        new_otp = generate_otp()
+        cached_data['otp'] = new_otp  # Update cached OTP
+        cache.set(cache_key, cached_data, timeout=600)  # Reset OTP timeout
+        
+        # Send new OTP via email
+        if not send_otp_email(email, new_otp):
+            return Response(
+                {'error': 'Failed to send OTP email'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response({
+            'message': 'New OTP sent successfully',
+            'email': email
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logger.error(f"Error during OTP resend: {str(e)}")
+        return Response(
+            {
+                'error': 'An error occurred while resending OTP',
+                'details': str(e)
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    
+
+@api_view(['POST'])  # Add GET if you need GET requests too
+@permission_classes([AllowAny])
+def forgot_password(request):
+    """
+    Forgot password view that sends OTP
+    """
+    if request.method != 'POST':
+        return Response(
+            {'error': 'Method not allowed'},
+            status=status.HTTP_405_METHOD_NOT_ALLOWED
+        )
+    
+    try:
+        data = request.data
+        email = data.get('email')
+
+        if not email:
+            return Response(
+                {'error': 'Email is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Check if user exists
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'No account found with this email'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Generate OTP
+        otp = generate_otp()
+
+        # Store OTP in cache
+        cache_key = f"password_reset_otp_{email}"
+        cache.set(cache_key, {
+            'otp': otp,
+            'user_id': user.id
+        }, timeout=600)  # 10 minutes expiry
+
+        # Send OTP via email
+        if not send_password_reset_otp_email(email, otp):
+            return Response(
+                {'error': 'Failed to send OTP email'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response({
+            'message': 'OTP has been sent to your email',
+            'email': email
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logger.error(f"Error during password reset request: {str(e)}")
+        return Response(
+            {
+                'error': 'An error occurred while processing the request',
+                'details': str(e)
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+def send_password_reset_otp_email(email, otp):
+    """Send OTP for password reset to user's email"""
+    subject = 'Password Reset OTP'
+    message = f'Your OTP for password reset is: {otp}\nThis OTP is valid for 10 minutes.'
+    
+    try:
+        send_mail(
+            subject,
+            message,
+            settings.EMAIL_HOST_USER,
+            [email],
+            fail_silently=False,
+        )
+        return True
+    except Exception as e:
+        logger.error(f"Error sending password reset OTP email to {email}: {e}")
+        return False
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def verify_otp_and_reset_password(request):
+    try:
+        email = request.data.get('email')
+        otp = request.data.get('otp')
+        new_password = request.data.get('new_password')
+
+        if not all([email, otp, new_password]):
+            return Response(
+                {'error': 'Email, OTP, and new password are required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Verify OTP
+        cache_key = f"password_reset_otp_{email}"
+        cached_data = cache.get(cache_key)
+
+        if not cached_data:
+            return Response(
+                {'error': 'OTP expired or invalid'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if str(otp) != str(cached_data['otp']):
+            return Response(
+                {'error': 'Invalid OTP'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user = User.objects.get(id=cached_data['user_id'])
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'User not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Set new password
+        user.set_password(new_password)
+        user.save()
+
+        # Clear the OTP cache
+        cache.delete(cache_key)
+
+        return Response(
+            {'message': 'Password has been reset successfully'},
+            status=status.HTTP_200_OK
+        )
+
+    except Exception as e:
+        logger.error(f"Error during password reset: {str(e)}")
+        return Response(
+            {'error': 'An error occurred during password reset', 'details': str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def resend_password_reset_otp(request):
+    try:
+        email = request.data.get('email')
+        
+        if not email:
+            return Response(
+                {'error': 'Email is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'No account found with this email'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        cache_key = f"password_reset_otp_{email}"
+        cached_data = cache.get(cache_key)
+
+        if not cached_data:
+            return Response(
+                {'error': 'No active password reset request found. Please initiate password reset again.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Generate new OTP
+        new_otp = generate_otp()
+        cached_data['otp'] = new_otp
+        cache.set(cache_key, cached_data, timeout=600)  # Reset timeout
+        
+        # Send new OTP
+        if not send_password_reset_otp_email(email, new_otp):
+            return Response(
+                {'error': 'Failed to send OTP email'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response({
+            'message': 'New OTP sent successfully',
+            'email': email
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logger.error(f"Error during OTP resend: {str(e)}")
+        return Response(
+            {
+                'error': 'An error occurred while resending OTP',
                 'details': str(e)
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
