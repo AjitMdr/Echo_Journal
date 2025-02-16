@@ -1,4 +1,3 @@
-// forgot_password_page.dart
 import 'package:flutter/material.dart';
 import '../../core/widgets/gradient_background.dart';
 import 'login_page.dart';
@@ -54,8 +53,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       } else {
         setState(() {
           _errorMessage =
-              result['data'].toString().replaceAll(RegExp(r'[{}]'), '') ??
-                  'An error occurred. Please try again.';
+              result['data'].toString().replaceAll(RegExp(r'[{}]'), '');
         });
       }
     } catch (e) {

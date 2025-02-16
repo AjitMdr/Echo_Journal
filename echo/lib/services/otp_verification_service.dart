@@ -52,8 +52,8 @@ class AuthService {
       print('Response: ${response.statusCode} - ${response.data}');
 
       if (response.statusCode == 201 && response.data['token'] != null) {
-        // You can implement token storage here
-        // await SecureStorage.saveToken(response.data['token']);
+        //token save function to be made...
+
         return true;
       }
       return false;

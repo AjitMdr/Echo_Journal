@@ -31,13 +31,13 @@ class AuthService {
       print('Response data: ${response.data}');
 
       if (response.statusCode == 200) {
-        return true; // Return true when login is successful
+        return true;
       } else {
-        return false; // Return false when login fails
+        return false;
       }
     } catch (e) {
       print('Error: ${e.toString()}');
-      return false; // Return false in case of an error
+      return false;
     }
   }
 }

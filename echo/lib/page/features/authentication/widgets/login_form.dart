@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../services/login_service.dart';
 import '../../home/home_page.dart';
 import '../../../core/constants/app_styles.dart';
-import '../../../core/widgets/error_message.dart'; // Import your ErrorMessageBox widget
+import '../../../core/widgets/error_message.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
@@ -91,8 +91,7 @@ class _LoginFormState extends State<LoginForm> {
           const SizedBox(height: 32),
           TextFormField(
             controller: _usernameController,
-            keyboardType:
-                TextInputType.emailAddress, // Assuming email-based login
+            keyboardType: TextInputType.emailAddress,
             autofillHints: [AutofillHints.username],
             decoration: AppStyles.inputDecoration.copyWith(
               hintText: 'Username',
@@ -128,8 +127,7 @@ class _LoginFormState extends State<LoginForm> {
               }
               return null;
             },
-            textInputAction:
-                TextInputAction.done, // Allows submitting on "Done"
+            textInputAction: TextInputAction.done,
           ),
           const SizedBox(height: 24),
 

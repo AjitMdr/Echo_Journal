@@ -63,20 +63,9 @@ from django.contrib.auth.models import User
 
 from django.contrib.auth.hashers import make_password
 
-@api_view(['POST'])
-# def signup(request):
-#     serializer = UserSerializer(data=request.data)
-#     if serializer.is_valid():
-#         serializer.save()
-#         user = User.objects.get(username=request.data['username'])
-#         user.set_password(request.data['password'])
-#         user.save()
-#         token = Token.objects.create(user=user)
-#         return Response({'token': token.key, 'user': serializer.data}, status=status.HTTP_201_CREATED)
-#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
+# login api
 @csrf_exempt
 def login(request):
     """
@@ -134,6 +123,8 @@ def login(request):
             'details': str(e)
         }, status=500)
 
+
+#test token api
 @api_view(['GET'])
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -142,8 +133,9 @@ def test_token(request):
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
-# ---------- UTILITIES ----------
 
+
+# function to create otp and send it 
 def generate_otp():
     """Generate a 6-digit OTP"""
     return str(random.randint(100000, 999999))
@@ -166,7 +158,7 @@ def send_otp_email(email, otp):
         logger.error(f"Error sending OTP email to {email}: {e}")
         return False
 
-# ---------- SIGNUP INITIATE ----------
+# sign up initiation
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -229,7 +221,7 @@ def signup_initiate(request):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
-# ---------- VERIFY OTP & SIGNUP ----------
+# verify sign up 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def verify_otp_and_signup(request):
@@ -300,8 +292,7 @@ def verify_otp_and_signup(request):
     
 
     
-
-
+# resent otp
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def resend_otp(request):
@@ -351,6 +342,7 @@ def resend_otp(request):
         )
     
 
+# forgot password api
 @api_view(['POST'])  # Add GET if you need GET requests too
 @permission_classes([AllowAny])
 def forgot_password(request):
@@ -414,6 +406,7 @@ def forgot_password(request):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
+# send mail function 
 def send_password_reset_otp_email(email, otp):
     """Send OTP for password reset to user's email"""
     subject = 'Password Reset OTP'
@@ -432,6 +425,7 @@ def send_password_reset_otp_email(email, otp):
         logger.error(f"Error sending password reset OTP email to {email}: {e}")
         return False
 
+# verify otp api
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def verify_otp_and_reset_password(request):
@@ -489,6 +483,7 @@ def verify_otp_and_reset_password(request):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
+# resend otp api
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def resend_password_reset_otp(request):

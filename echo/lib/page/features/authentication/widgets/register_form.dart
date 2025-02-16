@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../services/register_service.dart';
 import '../otp_verification_page.dart';
 import '../../../core/constants/app_styles.dart';
-import '../../../core/widgets/error_message.dart';  // Import the ErrorMessageBox widget
+import '../../../core/widgets/error_message.dart';
 
 class RegisterForm extends StatefulWidget {
   const RegisterForm({super.key});
@@ -20,7 +20,7 @@ class _RegisterFormState extends State<RegisterForm> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _isLoading = false;
-  String _errorMessage = '';  // Error message state
+  String _errorMessage = '';
 
   @override
   void dispose() {
@@ -35,7 +35,7 @@ class _RegisterFormState extends State<RegisterForm> {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
-        _errorMessage = '';  // Clear previous error message
+        _errorMessage = ''; // Clear previous error message
       });
 
       try {
@@ -45,14 +45,14 @@ class _RegisterFormState extends State<RegisterForm> {
           _emailController.text,
         );
 
-        print('Server response: $response');  // Debug: print the server response
+        print('Server response: $response');
 
-        // Assuming the server returns {'success': true, 'data': {...}} on success
         if (response['success'] == true) {
           print('Registration successful for: ${_emailController.text}');
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Registration successful! Please verify your email.'),
+              content:
+                  Text('Registration successful! Please verify your email.'),
               backgroundColor: Colors.green,
             ),
           );
@@ -66,15 +66,17 @@ class _RegisterFormState extends State<RegisterForm> {
             ),
           );
         } else {
-          // If success is false or the response does not contain success
           setState(() {
-            _errorMessage = response['data']?.toString().replaceAll(RegExp(r'[{}]'), '') ?? 'Registration failed. Please try again.';
+            _errorMessage =
+                response['data']?.toString().replaceAll(RegExp(r'[{}]'), '') ??
+                    'Registration failed. Please try again.';
           });
         }
       } catch (e) {
         print('Error during registration: ${e.toString()}');
         setState(() {
-          _errorMessage = 'Unable to complete the registration. Please try again later.';
+          _errorMessage =
+              'Unable to complete the registration. Please try again later.';
         });
       } finally {
         setState(() {
@@ -102,8 +104,8 @@ class _RegisterFormState extends State<RegisterForm> {
               if (value == null || value.isEmpty) {
                 return 'Please enter your email';
               }
-              final emailRegex = RegExp(
-                  r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
+              final emailRegex =
+                  RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
               if (!emailRegex.hasMatch(value)) {
                 return 'Please enter a valid email address';
               }
@@ -135,7 +137,8 @@ class _RegisterFormState extends State<RegisterForm> {
                 icon: Icon(
                   _obscurePassword ? Icons.visibility_off : Icons.visibility,
                 ),
-                onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                onPressed: () =>
+                    setState(() => _obscurePassword = !_obscurePassword),
               ),
             ),
             validator: (value) {
@@ -157,9 +160,12 @@ class _RegisterFormState extends State<RegisterForm> {
               prefixIcon: const Icon(Icons.lock_outline),
               suffixIcon: IconButton(
                 icon: Icon(
-                  _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                  _obscureConfirmPassword
+                      ? Icons.visibility_off
+                      : Icons.visibility,
                 ),
-                onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                onPressed: () => setState(
+                    () => _obscureConfirmPassword = !_obscureConfirmPassword),
               ),
             ),
             validator: (value) {
@@ -175,7 +181,7 @@ class _RegisterFormState extends State<RegisterForm> {
           const SizedBox(height: 24),
 
           // Display error message if there is one
-          if (_errorMessage.isNotEmpty) 
+          if (_errorMessage.isNotEmpty)
             ErrorMessageBox(errorMessage: _errorMessage),
 
           SizedBox(

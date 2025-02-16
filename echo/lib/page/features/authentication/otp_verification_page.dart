@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'login_page.dart';
 import '../../core/constants/app_styles.dart';
 import '../../core/widgets/gradient_background.dart';
-import '../../../services/otp_verification_service.dart'; 
+import '../../../services/otp_verification_service.dart';
 
 class OTPVerificationPage extends StatefulWidget {
   final String email;
@@ -132,50 +132,48 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
     }
   }
 
- Future<void> _resendOTP() async {
-  if (_resendTimer > 0) return;
+  Future<void> _resendOTP() async {
+    if (_resendTimer > 0) return;
 
-  setState(() => _isLoading = true);
+    setState(() => _isLoading = true);
 
-  try {
-    final success = await AuthService.resendOTP(widget.email);
-    
-    // Print what is received from the device/service
-    print('Resend OTP Response: $success');
+    try {
+      final success = await AuthService.resendOTP(widget.email);
 
-    if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('OTP resent successfully!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      _startResendTimer();
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to resend OTP. Please try again.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  } catch (e) {
-    print('Error while resending OTP: $e'); // Print the error message
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  } finally {
-    if (mounted) {
-      setState(() => _isLoading = false);
+      print('Resend OTP Response: $success');
+
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('OTP resent successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _startResendTimer();
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to resend OTP. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error while resending OTP: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -235,7 +233,8 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
                                 child: TextFormField(
                                   controller: _controllers[index],
                                   focusNode: _focusNodes[index],
-                                  decoration: AppStyles.inputDecoration.copyWith(
+                                  decoration:
+                                      AppStyles.inputDecoration.copyWith(
                                     contentPadding: const EdgeInsets.symmetric(
                                       vertical: 12,
                                       horizontal: 12,

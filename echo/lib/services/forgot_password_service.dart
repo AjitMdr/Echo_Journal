@@ -81,7 +81,6 @@ class AuthService {
     }
   }
 
-  // Optional: Add resend OTP service
   static Future<Map<String, dynamic>> resendOTP(String email) async {
     final url = '${Config.baseUrl}/resend-password-reset-otp/';
     final Map<String, String> body = {

@@ -1,4 +1,3 @@
-// privacy_policy_page.dart
 import 'package:flutter/material.dart';
 
 class PrivacyPolicyPage extends StatelessWidget {

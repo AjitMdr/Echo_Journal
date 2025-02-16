@@ -12,7 +12,6 @@ class NavBarState extends State<NavBar> {
   int _selectedIndex = 0;
   final PageController _pageController = PageController();
 
-  // Dummy profile image URL (you can update this with actual data)
   String? profileImageUrl;
 
   void _onPageChanged(int index) {
@@ -71,10 +70,8 @@ class NavBarState extends State<NavBar> {
                   children: [
                     _buildNavItem(Icons.home, 0),
                     _buildNavItem(Icons.people, 1),
-                    _buildNavItem(
-                        Icons.bar_chart, 2), // Replaced video icon with chart
-                    _buildNavItem(FontAwesomeIcons.faceSmile,
-                        3), // Replaced marketplace icon with emoji
+                    _buildNavItem(Icons.bar_chart, 2),
+                    _buildNavItem(FontAwesomeIcons.faceSmile, 3),
                     _buildNavItem(Icons.notifications, 4),
                     _buildNavItem(Icons.menu, 5),
                   ],

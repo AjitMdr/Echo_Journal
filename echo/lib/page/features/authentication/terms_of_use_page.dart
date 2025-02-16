@@ -1,4 +1,3 @@
-// terms_of_use_page.dart
 import 'package:flutter/material.dart';
 
 class TermsOfUsePage extends StatelessWidget {
@@ -14,5 +13,3 @@ class TermsOfUsePage extends StatelessWidget {
     );
   }
 }
-
-

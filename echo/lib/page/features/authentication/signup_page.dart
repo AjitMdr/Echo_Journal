@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import './widgets/register_form.dart';
 import '../../core/widgets/gradient_background.dart';
-import 'login_page.dart'; // Replace with the actual import for your LoginPage
+import 'login_page.dart';
 
 class RegisterPageUI extends StatelessWidget {
   const RegisterPageUI({super.key});
@@ -51,14 +51,14 @@ class RegisterPageUI extends StatelessWidget {
                         ),
                         const SizedBox(height: 32),
                         const RegisterForm(),
-                        const SizedBox(height: 16), // Space between form and button
+                        const SizedBox(height: 16),
                         TextButton(
                           onPressed: () {
                             // Navigate to the login page
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const LoginPage(), // Replace with actual login page
+                                builder: (context) => const LoginPage(),
                               ),
                             );
                           },
