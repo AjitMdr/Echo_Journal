@@ -1,0 +1,2 @@
+/Users/ajitmanandhar/Desktop/Desktop - Ajit’s MacBook Air/000fyp/echo/android/app/.cxx/Debug/4g4t2c6y/x86/CMakeFiles/edit_cache.dir
+/Users/ajitmanandhar/Desktop/Desktop - Ajit’s MacBook Air/000fyp/echo/android/app/.cxx/Debug/4g4t2c6y/x86/CMakeFiles/rebuild_cache.dir

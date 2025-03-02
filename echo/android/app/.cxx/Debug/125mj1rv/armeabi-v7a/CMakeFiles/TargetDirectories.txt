@@ -1,0 +1,2 @@
+/Users/ajitmanandhar/Desktop/final year copy 2/Echo_Journal/echo/android/app/.cxx/Debug/125mj1rv/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/ajitmanandhar/Desktop/final year copy 2/Echo_Journal/echo/android/app/.cxx/Debug/125mj1rv/armeabi-v7a/CMakeFiles/rebuild_cache.dir
