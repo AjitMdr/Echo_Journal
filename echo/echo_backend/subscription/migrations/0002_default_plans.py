@@ -11,7 +11,7 @@ def create_default_plans(apps, schema_editor):
     Plan.objects.create(
         name='Free Plan',
         plan_type='FREE',
-        price=0.00,
+        price= 0.00,
         duration_days=365,  # Free plan is valid for a year and auto-renews
         description='All features except mood analysis',
         features={
@@ -28,7 +28,7 @@ def create_default_plans(apps, schema_editor):
     Plan.objects.create(
         name='Premium Plan',
         plan_type='PREMIUM',
-        price=9.99,
+        price=990,
         duration_days=30,
         description='All features including AI-powered mood analysis',
         features={

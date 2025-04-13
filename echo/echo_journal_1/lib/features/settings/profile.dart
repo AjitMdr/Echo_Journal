@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:echo_fe/features/widgets/streak_badge_widget.dart';
+import 'package:echo_journal1/features/widgets/streak_badge_widget.dart';
 import 'package:provider/provider.dart';
-import 'package:echo_fe/core/configs/theme/theme-provider.dart';
+import 'package:echo_journal1/core/configs/theme/theme-provider.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -113,72 +113,70 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return Scaffold(
       appBar: AppBar(title: Text('Profile')),
-      body:
-          isLoading
-              ? Center(child: CircularProgressIndicator())
-              : SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Profile Picture
-                      Center(
-                        child: GestureDetector(
-                          onTap: _updateProfilePicture,
-                          child: CircleAvatar(
-                            radius: 60,
-                            backgroundImage:
-                                profilePictureUrl != null
-                                    ? NetworkImage(profilePictureUrl!)
-                                    : AssetImage('assets/default_profile.png')
-                                        as ImageProvider,
-                          ),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Profile Picture
+                    Center(
+                      child: GestureDetector(
+                        onTap: _updateProfilePicture,
+                        child: CircleAvatar(
+                          radius: 60,
+                          backgroundImage: profilePictureUrl != null
+                              ? NetworkImage(profilePictureUrl!)
+                              : AssetImage('assets/default_profile.png')
+                                  as ImageProvider,
                         ),
                       ),
-                      SizedBox(height: 20),
-                      // Streak and Badges
-                      StreakBadgeWidget(isDarkMode: isDarkMode),
-                      SizedBox(height: 20),
-                      // Username Field
-                      TextField(
-                        decoration: InputDecoration(
-                          labelText: 'Username',
-                          border: OutlineInputBorder(),
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            username = value;
-                          });
-                        },
-                        controller: TextEditingController(text: username),
+                    ),
+                    SizedBox(height: 20),
+                    // Streak and Badges
+                    StreakBadgeWidget(isDarkMode: isDarkMode),
+                    SizedBox(height: 20),
+                    // Username Field
+                    TextField(
+                      decoration: InputDecoration(
+                        labelText: 'Username',
+                        border: OutlineInputBorder(),
                       ),
-                      SizedBox(height: 10),
-                      // Email Field
-                      TextField(
-                        decoration: InputDecoration(
-                          labelText: 'Email',
-                          border: OutlineInputBorder(),
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            email = value;
-                          });
-                        },
-                        controller: TextEditingController(text: email),
+                      onChanged: (value) {
+                        setState(() {
+                          username = value;
+                        });
+                      },
+                      controller: TextEditingController(text: username),
+                    ),
+                    SizedBox(height: 10),
+                    // Email Field
+                    TextField(
+                      decoration: InputDecoration(
+                        labelText: 'Email',
+                        border: OutlineInputBorder(),
                       ),
-                      SizedBox(height: 20),
-                      // Update Profile Button
-                      Center(
-                        child: ElevatedButton(
-                          onPressed: _updateProfile,
-                          child: Text('Update Profile'),
-                        ),
+                      onChanged: (value) {
+                        setState(() {
+                          email = value;
+                        });
+                      },
+                      controller: TextEditingController(text: email),
+                    ),
+                    SizedBox(height: 20),
+                    // Update Profile Button
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: _updateProfile,
+                        child: Text('Update Profile'),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
+            ),
     );
   }
 }

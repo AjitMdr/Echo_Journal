@@ -6,7 +6,7 @@ import 'mood/mood_page.dart';
 import 'chat/chat_page.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   _HomePageState createState() => _HomePageState();

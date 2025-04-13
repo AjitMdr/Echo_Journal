@@ -6,8 +6,8 @@ class ToastNotification extends StatelessWidget {
   final String message;
   final ToastType type;
 
-  const ToastNotification(
-      {super.key, required this.message, required this.type});
+  const ToastNotification({Key? key, required this.message, required this.type})
+    : super(key: key);
 
   static void show(
     BuildContext context, {
@@ -17,51 +17,52 @@ class ToastNotification extends StatelessWidget {
     OverlayState? overlay = Overlay.of(context);
 
     OverlayEntry overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        bottom: MediaQuery.of(context).size.height * 0.1,
-        width: MediaQuery.of(context).size.width,
-        child: Material(
-          color: Colors.transparent,
-          child: SafeArea(
-            child: Center(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: _getBackgroundColor(type),
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
-                      offset: const Offset(0, 4),
-                      blurRadius: 8,
+      builder:
+          (context) => Positioned(
+            bottom: MediaQuery.of(context).size.height * 0.1,
+            width: MediaQuery.of(context).size.width,
+            child: Material(
+              color: Colors.transparent,
+              child: SafeArea(
+                child: Center(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
                     ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _getIcon(type),
-                    const SizedBox(width: 12),
-                    Flexible(
-                      child: Text(
-                        message,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
+                    decoration: BoxDecoration(
+                      color: _getBackgroundColor(type),
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.15),
+                          offset: const Offset(0, 4),
+                          blurRadius: 8,
                         ),
-                      ),
+                      ],
                     ),
-                  ],
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _getIcon(type),
+                        const SizedBox(width: 12),
+                        Flexible(
+                          child: Text(
+                            message,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      ),
     );
 
     overlay.insert(overlayEntry);

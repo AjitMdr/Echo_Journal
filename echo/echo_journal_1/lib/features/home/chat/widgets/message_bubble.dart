@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:echo_fe/data/models/direct_message.dart';
-import 'package:echo_fe/services/chat/chat_service.dart';
+import 'package:echo_journal1/data/models/direct_message.dart';
+import 'package:echo_journal1/services/chat/chat_service.dart';
 
 class MessageBubble extends StatefulWidget {
   final DirectMessage message;

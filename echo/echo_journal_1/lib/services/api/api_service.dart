@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:echo_fe/services/auth/secure_storage_service.dart';
-import 'package:echo_fe/services/auth/session_management.dart';
+import 'package:echo_journal1/services/auth/secure_storage_service.dart';
+import 'package:echo_journal1/services/auth/session_management.dart';
 
 class ApiService {
   final Dio _dio = Dio();

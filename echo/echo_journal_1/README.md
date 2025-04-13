@@ -1,4 +1,4 @@
-# echo_fe
+# echo_journal1
 
 A new Flutter project.
 

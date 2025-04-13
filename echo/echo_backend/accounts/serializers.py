@@ -68,10 +68,11 @@ class UserSerializer(serializers.ModelSerializer):
             'profile_picture',
             'is_verified',
             'is_active',
-            'date_joined'
+            'date_joined',
+            'role'
         ]
         # Fields that shouldn't be modified through the API
-        read_only_fields = ['id', 'is_active', 'date_joined']
+        read_only_fields = ['id', 'is_active', 'date_joined', 'role']
         extra_kwargs = {
             # Password should never be readable
             'password': {'write_only': True}

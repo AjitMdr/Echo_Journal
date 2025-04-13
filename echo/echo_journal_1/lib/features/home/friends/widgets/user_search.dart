@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:echo_fe/services/friends/friends_service.dart';
+import 'package:echo_journal1/services/friends/friends_service.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'package:echo_fe/utils/toast_helper.dart';
-import 'package:echo_fe/features/home/chat/direct_chat_page.dart';
+import 'package:echo_journal1/utils/toast_helper.dart';
+import 'package:echo_journal1/features/home/chat/direct_chat_page.dart';
 
 class UserSearchWidget extends StatefulWidget {
   final bool isDarkMode;

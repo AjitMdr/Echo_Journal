@@ -1,11 +1,11 @@
-import 'package:echo_fe/core/configs/theme/curved-pattern.dart';
-import 'package:echo_fe/features/home/chat/conversations_page.dart';
-import 'package:echo_fe/services/chat/chat_service.dart';
-import 'package:echo_fe/utils/toast_helper.dart';
+import 'package:echo_journal1/core/configs/theme/curved-pattern.dart';
+import 'package:echo_journal1/features/home/chat/conversations_page.dart';
+import 'package:echo_journal1/services/chat/chat_service.dart';
+import 'package:echo_journal1/utils/toast_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:echo_fe/core/configs/theme/theme-provider.dart';
-import 'package:echo_fe/features/widgets/navbar.dart';
+import 'package:echo_journal1/core/configs/theme/theme-provider.dart';
+import 'package:echo_journal1/features/widgets/navbar.dart';
 
 class ChatPage extends StatefulWidget {
   final bool isDarkMode;
@@ -19,12 +19,17 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage>
     with AutomaticKeepAliveClientMixin {
   final ChatService _chatService = ChatService();
-  final bool _isLoading = false;
-  final bool _hasError = false;
+  bool _isLoading = false;
+  bool _hasError = false;
   String? _errorMessage;
 
   @override
   bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   void didChangeDependencies() {

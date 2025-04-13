@@ -1,9 +1,9 @@
-import 'package:echo_fe/common/widgets/error_message.dart';
-import 'package:echo_fe/common/widgets/success_message.dart';
-import 'package:echo_fe/core/configs/theme/app-styles.dart';
-import 'package:echo_fe/core/configs/theme/gradient-bg-pattern.dart';
-import 'package:echo_fe/core/configs/theme/theme-provider.dart';
-import 'package:echo_fe/features/authentication/pages/reset_password_page.dart';
+import 'package:echo_journal1/common/widgets/error_message.dart';
+import 'package:echo_journal1/common/widgets/success_message.dart';
+import 'package:echo_journal1/core/configs/theme/app-styles.dart';
+import 'package:echo_journal1/core/configs/theme/gradient-bg-pattern.dart';
+import 'package:echo_journal1/core/configs/theme/theme-provider.dart';
+import 'package:echo_journal1/features/authentication/pages/reset_password_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'login_page.dart';
@@ -64,9 +64,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       } else {
         setState(() {
           _errorMessage = result['data'].toString().replaceAll(
-            RegExp(r'[{}]'),
-            '',
-          );
+                RegExp(r'[{}]'),
+                '',
+              );
         });
       }
     } catch (e) {
@@ -104,10 +104,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       borderRadius: BorderRadius.circular(30),
                       boxShadow: [
                         BoxShadow(
-                          color:
-                              isDarkMode
-                                  ? Colors.black.withOpacity(0.4)
-                                  : Colors.black.withOpacity(0.1),
+                          color: isDarkMode
+                              ? Colors.black.withOpacity(0.4)
+                              : Colors.black.withOpacity(0.1),
                           blurRadius: 10,
                           offset: const Offset(0, 5),
                         ),
@@ -121,10 +120,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
-                            color:
-                                isDarkMode
-                                    ? const Color.fromARGB(255, 255, 255, 255)
-                                    : const Color(0xFFFF758C),
+                            color: isDarkMode
+                                ? const Color.fromARGB(255, 255, 255, 255)
+                                : const Color(0xFFFF758C),
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -132,10 +130,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           'Enter your email to receive an OTP',
                           style: TextStyle(
                             fontSize: 16,
-                            color:
-                                isDarkMode
-                                    ? Colors.grey[300]
-                                    : Colors.grey[700],
+                            color: isDarkMode
+                                ? Colors.grey[300]
+                                : Colors.grey[700],
                           ),
                         ),
                         const SizedBox(height: 24),
@@ -149,21 +146,18 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                             labelText: 'Email',
                             hintText: 'Enter your email address',
                             labelStyle: TextStyle(
-                              color:
-                                  isDarkMode
-                                      ? Colors.white
-                                      : Colors.black, // Change label color
+                              color: isDarkMode
+                                  ? Colors.white
+                                  : Colors.black, // Change label color
                             ),
                             hintStyle: TextStyle(
-                              color:
-                                  isDarkMode
-                                      ? Colors.white.withOpacity(0.7)
-                                      : Colors.black.withOpacity(0.7),
+                              color: isDarkMode
+                                  ? Colors.white.withOpacity(0.7)
+                                  : Colors.black.withOpacity(0.7),
                             ),
-                            fillColor:
-                                isDarkMode
-                                    ? Colors.grey[800]
-                                    : Colors.grey[100],
+                            fillColor: isDarkMode
+                                ? Colors.grey[800]
+                                : Colors.grey[100],
                             filled: true,
                             prefixIcon: Icon(
                               Icons.email_outlined,
@@ -172,10 +166,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(15),
                               borderSide: BorderSide(
-                                color:
-                                    isDarkMode
-                                        ? Colors.grey[600]!
-                                        : Colors.grey[300]!,
+                                color: isDarkMode
+                                    ? Colors.grey[600]!
+                                    : Colors.grey[300]!,
                               ),
                             ),
                           ),
@@ -189,55 +182,50 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         SizedBox(
                           width: double.infinity,
                           height: 50,
-                          child:
-                              _isLoading
-                                  ? Center(
-                                    child: CircularProgressIndicator(
-                                      color:
-                                          isDarkMode
-                                              ? Colors.white
-                                              : Colors.black,
-                                    ),
-                                  )
-                                  : ElevatedButton(
-                                    onPressed: _sendOTP,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          isDarkMode
-                                              ? Colors.grey[800]
-                                              : const Color(
-                                                0xFFFF758C,
-                                              ), // Color changes based on dark mode
-                                      elevation: 3,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(15),
-                                      ),
-                                    ),
-                                    child: const Text(
-                                      'Send OTP',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                          child: _isLoading
+                              ? Center(
+                                  child: CircularProgressIndicator(
+                                    color: isDarkMode
+                                        ? Colors.white
+                                        : Colors.black,
+                                  ),
+                                )
+                              : ElevatedButton(
+                                  onPressed: _sendOTP,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: isDarkMode
+                                        ? Colors.grey[800]
+                                        : const Color(
+                                            0xFFFF758C,
+                                          ), // Color changes based on dark mode
+                                    elevation: 3,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15),
                                     ),
                                   ),
+                                  child: const Text(
+                                    'Send OTP',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
                         ),
                         const SizedBox(height: 16),
                         TextButton(
-                          onPressed:
-                              () => Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const LoginPage(),
-                                ),
-                              ),
+                          onPressed: () => Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginPage(),
+                            ),
+                          ),
                           child: Text(
                             "Remembered your password? Login",
                             style: TextStyle(
-                              color:
-                                  isDarkMode
-                                      ? Color.fromARGB(255, 174, 170, 171)
-                                      : const Color(0xFFFF758C),
+                              color: isDarkMode
+                                  ? Color.fromARGB(255, 174, 170, 171)
+                                  : const Color(0xFFFF758C),
                               fontWeight: FontWeight.bold,
                             ),
                           ),

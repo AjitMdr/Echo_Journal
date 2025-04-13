@@ -2,9 +2,9 @@
 
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:echo_fe/services/auth/secure_storage_service.dart';
+import 'package:echo_journal1/services/auth/secure_storage_service.dart';
 import 'package:dio/dio.dart';
-import 'package:echo_fe/core/configs/api_config.dart';
+import 'package:echo_journal1/core/configs/api_config.dart';
 import 'package:flutter/foundation.dart';
 
 /// 🔐 Service class handling JWT token management including validation,

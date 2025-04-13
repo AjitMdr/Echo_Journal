@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:echo_fe/widgets/toast_notification.dart';
+import 'package:echo_journal1/widgets/toast_notification.dart';
 
 class ToastHelper {
   static void showSuccess(BuildContext context, String message) {

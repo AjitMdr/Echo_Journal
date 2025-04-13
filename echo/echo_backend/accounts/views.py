@@ -96,8 +96,34 @@ def login(request):
 
     if serializer.is_valid():
         user = serializer.validated_data['user']
-        refresh = RefreshToken.for_user(user)
 
+        # Check if 2FA is enabled
+        if user.two_factor_enabled:
+            # Generate and send OTP
+            otp = generate_otp()
+            cache_key = f"2fa_login_otp_{user.email}"
+
+            # Store OTP in cache with user ID
+            cache.set(cache_key, {
+                'otp': otp,
+                'user_id': user.id
+            }, timeout=300)  # 5 minutes expiry
+
+            # Send OTP via email
+            if not send_2fa_login_otp(user.email, otp):
+                return Response(
+                    {'error': 'Failed to send 2FA code'},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+
+            return Response({
+                'requires_2fa': True,
+                'email': user.email,
+                'message': '2FA code has been sent to your email'
+            }, status=status.HTTP_200_OK)
+
+        # If 2FA is not enabled, proceed with normal login
+        refresh = RefreshToken.for_user(user)
         return Response({
             'refresh': str(refresh),
             'access': str(refresh.access_token),
@@ -105,7 +131,8 @@ def login(request):
                 'username': user.username,
                 'email': user.email,
                 'id': user.id,
-                'is_verified': user.is_verified
+                'is_verified': user.is_verified,
+                'role': user.role
             }
         }, status=status.HTTP_200_OK)
 
@@ -116,14 +143,143 @@ def login(request):
         return Response({
             'error': error_message,
             'needs_verification': True,
-            # username is email in this case
             'email': request.data.get('username')
         }, status=status.HTTP_403_FORBIDDEN)
 
     return Response({'error': error_message}, status=status.HTTP_400_BAD_REQUEST)
 
 
+def send_2fa_login_otp(email, otp):
+    """Send 2FA OTP for login"""
+    subject = 'Login Verification Code'
+    message = f'Your verification code for login is: {otp}\nThis code is valid for 5 minutes.'
+
+    try:
+        send_mail(
+            subject,
+            message,
+            settings.EMAIL_HOST_USER,
+            [email],
+            fail_silently=False,
+        )
+        return True
+    except Exception as e:
+        logger.error(f"Error sending 2FA login OTP to {email}: {e}")
+        return False
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def verify_2fa_login(request):
+    """Verify 2FA code during login"""
+    try:
+        email = request.data.get('email')
+        otp = request.data.get('otp')
+
+        if not email or not otp:
+            return Response(
+                {'error': 'Email and verification code are required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Get OTP from cache
+        cache_key = f"2fa_login_otp_{email}"
+        cached_data = cache.get(cache_key)
+
+        if not cached_data:
+            return Response(
+                {'error': 'Verification code has expired. Please login again.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if str(otp) != str(cached_data['otp']):
+            return Response(
+                {'error': 'Invalid verification code'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user = User.objects.get(id=cached_data['user_id'])
+            refresh = RefreshToken.for_user(user)
+
+            # Clear the OTP cache
+            cache.delete(cache_key)
+
+            return Response({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+                'user': {
+                    'username': user.username,
+                    'email': user.email,
+                    'id': user.id,
+                    'is_verified': user.is_verified
+                }
+            }, status=status.HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'User not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    except Exception as e:
+        logger.error(f"Error during 2FA verification: {str(e)}")
+        return Response(
+            {'error': 'An error occurred during verification'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def resend_2fa_login_otp(request):
+    """Resend 2FA code during login"""
+    try:
+        email = request.data.get('email')
+
+        if not email:
+            return Response(
+                {'error': 'Email is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        cache_key = f"2fa_login_otp_{email}"
+        cached_data = cache.get(cache_key)
+
+        if not cached_data:
+            return Response(
+                {'error': 'No active login session found. Please login again.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Generate new OTP
+        new_otp = generate_otp()
+        cached_data['otp'] = new_otp
+        # Reset timeout to 5 minutes
+        cache.set(cache_key, cached_data, timeout=300)
+
+        # Send new OTP
+        if not send_2fa_login_otp(email, new_otp):
+            return Response(
+                {'error': 'Failed to send verification code'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response({
+            'message': 'New verification code sent successfully',
+            'email': email
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logger.error(f"Error during 2FA code resend: {str(e)}")
+        return Response(
+            {'error': 'An error occurred while resending verification code'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
 # function to create otp and send it
+
+
 def generate_otp():
     """Generate a 6-digit OTP"""
     return str(random.randint(100000, 999999))
@@ -809,5 +965,49 @@ def verify_account_request(request):
         logger.error(f"Error during account verification request: {str(e)}")
         return Response(
             {'error': 'An error occurred during verification'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_two_factor_status(request):
+    """Get the current 2FA status for the user"""
+    try:
+        return Response({
+            'is_enabled': request.user.two_factor_enabled
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Error getting 2FA status: {str(e)}")
+        return Response(
+            {'error': 'Failed to get 2FA status'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def toggle_two_factor(request):
+    """Enable or disable 2FA for the user"""
+    try:
+        enable = request.data.get('enable')
+        if enable is None:
+            return Response(
+                {'error': 'Enable parameter is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user = request.user
+        user.two_factor_enabled = enable
+        user.save()
+
+        return Response({
+            'message': '2FA settings updated successfully',
+            'is_enabled': user.two_factor_enabled
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Error updating 2FA status: {str(e)}")
+        return Response(
+            {'error': 'Failed to update 2FA settings'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )

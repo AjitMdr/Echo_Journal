@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
+import 'package:echo_journal1/features/authentication/pages/login_page.dart';
 import 'package:flutter/material.dart';
-import 'package:echo_fe/core/configs/api_config.dart';
+import 'package:echo_journal1/core/configs/api_config.dart';
 
 class RegisterService {
   static final _dio = Dio();

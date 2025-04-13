@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'package:echo_fe/common/widgets/error_message.dart';
-import 'package:echo_fe/core/configs/theme/gradient-bg-pattern.dart';
+import 'package:echo_journal1/common/widgets/error_message.dart';
+import 'package:echo_journal1/core/configs/theme/gradient-bg-pattern.dart';
 import 'package:flutter/material.dart';
 import 'login_page.dart';
-import 'package:echo_fe/utils/toast_helper.dart';
+import 'package:echo_journal1/utils/toast_helper.dart';
 
 class ResetPasswordPage extends StatefulWidget {
   final String email;
@@ -213,23 +213,21 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                           const SizedBox(height: 24),
                           ElevatedButton(
                             onPressed: _isLoading ? null : _resetPassword,
-                            child:
-                                _isLoading
-                                    ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                    : const Text('Reset Password'),
+                            child: _isLoading
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Text('Reset Password'),
                           ),
                           const SizedBox(height: 16),
                           TextButton(
-                            onPressed:
-                                _canResendOTP && !_isLoading
-                                    ? _resendOTP
-                                    : null,
+                            onPressed: _canResendOTP && !_isLoading
+                                ? _resendOTP
+                                : null,
                             child: Text(
                               _canResendOTP
                                   ? 'Resend OTP'

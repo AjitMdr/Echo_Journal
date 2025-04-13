@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:echo_fe/services/friends/friends_service.dart';
+import 'package:echo_journal1/services/friends/friends_service.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'package:echo_fe/utils/toast_helper.dart';
-import 'package:echo_fe/services/auth/secure_storage_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:echo_journal1/utils/toast_helper.dart';
+import 'package:echo_journal1/services/auth/secure_storage_service.dart';
 
 class FriendRequestsWidget extends StatefulWidget {
   final bool isDarkMode;

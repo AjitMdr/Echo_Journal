@@ -1,4 +1,4 @@
-import 'package:echo_fe/data/models/direct_message.dart';
+import 'package:echo_journal1/data/models/direct_message.dart';
 import 'package:flutter/material.dart';
 
 class Participant {
@@ -73,20 +73,16 @@ class Conversation {
       return Conversation(
         id: json['id']?.toString() ?? '',
         participants: participantsList,
-        createdAt:
-            DateTime.tryParse(json['created_at']?.toString() ?? '') ??
+        createdAt: DateTime.tryParse(json['created_at']?.toString() ?? '') ??
             DateTime.now(),
-        updatedAt:
-            DateTime.tryParse(json['updated_at']?.toString() ?? '') ??
+        updatedAt: DateTime.tryParse(json['updated_at']?.toString() ?? '') ??
             DateTime.now(),
-        lastMessage:
-            json['last_message'] != null
-                ? DirectMessage.fromJson(json['last_message'])
-                : null,
-        unreadCount:
-            json['unread_count'] is int
-                ? json['unread_count']
-                : (int.tryParse(json['unread_count']?.toString() ?? '0') ?? 0),
+        lastMessage: json['last_message'] != null
+            ? DirectMessage.fromJson(json['last_message'])
+            : null,
+        unreadCount: json['unread_count'] is int
+            ? json['unread_count']
+            : (int.tryParse(json['unread_count']?.toString() ?? '0') ?? 0),
       );
     } catch (e) {
       debugPrint('Error parsing Conversation: $e');

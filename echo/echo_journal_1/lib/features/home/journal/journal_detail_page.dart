@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:echo_fe/services/journal/journal_service.dart';
-import 'package:echo_fe/utils/toast_helper.dart';
-import 'package:echo_fe/constants/api_constants.dart';
+import 'package:echo_journal1/services/journal/journal_service.dart';
+import 'package:echo_journal1/utils/toast_helper.dart';
+import 'package:echo_journal1/constants/api_constants.dart';
 
 class JournalDetailPage extends StatefulWidget {
   final int journalId;
 
-  const JournalDetailPage({super.key, required this.journalId});
+  const JournalDetailPage({Key? key, required this.journalId})
+      : super(key: key);
 
   @override
   _JournalDetailPageState createState() => _JournalDetailPageState();
@@ -39,7 +40,7 @@ class _JournalDetailPageState extends State<JournalDetailPage> {
 
       if (!mounted) return;
 
-      if (response['data'] == null) {
+      if (response == null || response['data'] == null) {
         ToastHelper.showError(context, 'Journal not found');
         Navigator.pop(context);
         return;

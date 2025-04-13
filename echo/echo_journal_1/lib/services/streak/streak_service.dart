@@ -1,8 +1,8 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:echo_fe/services/auth/secure_storage_service.dart';
+import 'package:echo_journal1/services/auth/secure_storage_service.dart';
 import 'package:flutter/foundation.dart';
-import 'package:echo_fe/core/configs/api_config.dart';
+import 'package:echo_journal1/core/configs/api_config.dart';
 
 class StreakService {
   static const String authPrefix = '/auth';
@@ -17,7 +17,8 @@ class StreakService {
       }
 
       final response = await http.get(
-        Uri.parse(ApiConfig.getFullUrl('$authPrefix/streaks/current_streak/')),
+        Uri.parse(
+            '${ApiConfig.getFullUrl('$authPrefix/streaks/current_streak/')}'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -88,7 +89,7 @@ class StreakService {
       }
 
       final response = await http.get(
-        Uri.parse(ApiConfig.getFullUrl('$authPrefix/badges/user_badges/')),
+        Uri.parse('${ApiConfig.getFullUrl('$authPrefix/badges/user_badges/')}'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -119,8 +120,8 @@ class StreakService {
 
       debugPrint('🔄 Getting streak for user ID: $userId');
       final response = await http.get(
-        Uri.parse(ApiConfig.getFullUrl(
-            '$authPrefix/streaks/user-streak/?user_id=$userId')),
+        Uri.parse(
+            '${ApiConfig.getFullUrl('$authPrefix/streaks/user-streak/?user_id=$userId')}'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',

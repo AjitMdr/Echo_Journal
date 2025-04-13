@@ -1,21 +1,21 @@
-import 'package:echo_fe/core/configs/theme/theme-provider.dart';
-import 'package:echo_fe/features/home/journal/journal_page.dart';
-import 'package:echo_fe/features/home/friends/friends_page.dart';
-import 'package:echo_fe/features/home/chat/chat_page.dart';
-import 'package:echo_fe/features/home/mood/mood_page.dart';
-import 'package:echo_fe/features/settings/settings_page.dart';
-import 'package:echo_fe/services/chat/chat_service.dart';
+import 'package:echo_journal1/core/configs/theme/theme-provider.dart';
+import 'package:echo_journal1/features/home/journal/journal_page.dart';
+import 'package:echo_journal1/features/home/friends/friends_page.dart';
+import 'package:echo_journal1/features/home/chat/chat_page.dart';
+import 'package:echo_journal1/features/home/mood/mood_page.dart';
+import 'package:echo_journal1/features/settings/settings_page.dart';
+import 'package:echo_journal1/services/chat/chat_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:echo_fe/utils/toast_helper.dart';
+import 'package:echo_journal1/utils/toast_helper.dart';
 import 'dart:async';
-import 'package:echo_fe/features/home/analytics/analytics_page.dart';
-import 'package:echo_fe/services/auth/secure_storage_service.dart';
-import 'package:echo_fe/core/providers/subscription_provider.dart';
-import 'package:echo_fe/features/subscription/subscription_plans_page.dart';
+import 'package:echo_journal1/features/home/analytics/analytics_page.dart';
+import 'package:echo_journal1/services/auth/secure_storage_service.dart';
+import 'package:echo_journal1/core/providers/subscription_provider.dart';
+import 'package:echo_journal1/features/subscription/subscription_plans_page.dart';
 
 class NavBar extends StatefulWidget {
   const NavBar({super.key});

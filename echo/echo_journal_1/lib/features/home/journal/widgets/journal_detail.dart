@@ -4,16 +4,17 @@ import 'package:intl/intl.dart';
 class JournalDetail extends StatelessWidget {
   final Map<String, dynamic> journal;
 
-  const JournalDetail({super.key, required this.journal});
+  const JournalDetail({Key? key, required this.journal}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final sentiment = journal['sentiment'] ?? 'unknown';
-    final createdAt = journal['created_at'] != null
-        ? DateFormat(
-            'MMM d, yyyy h:mm a',
-          ).format(DateTime.parse(journal['created_at']))
-        : 'Unknown date';
+    final createdAt =
+        journal['created_at'] != null
+            ? DateFormat(
+              'MMM d, yyyy h:mm a',
+            ).format(DateTime.parse(journal['created_at']))
+            : 'Unknown date';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -45,11 +46,12 @@ class JournalDetail extends StatelessWidget {
               sentiment == 'positive'
                   ? Icons.sentiment_satisfied
                   : sentiment == 'negative'
-                      ? Icons.sentiment_dissatisfied
-                      : Icons.sentiment_neutral,
-              color: sentiment == 'positive'
-                  ? Colors.green
-                  : sentiment == 'negative'
+                  ? Icons.sentiment_dissatisfied
+                  : Icons.sentiment_neutral,
+              color:
+                  sentiment == 'positive'
+                      ? Colors.green
+                      : sentiment == 'negative'
                       ? Colors.red
                       : Colors.grey,
               size: 28,
@@ -58,9 +60,10 @@ class JournalDetail extends StatelessWidget {
             Text(
               sentiment.toUpperCase(),
               style: TextStyle(
-                color: sentiment == 'positive'
-                    ? Colors.green
-                    : sentiment == 'negative'
+                color:
+                    sentiment == 'positive'
+                        ? Colors.green
+                        : sentiment == 'negative'
                         ? Colors.red
                         : Colors.grey,
                 fontWeight: FontWeight.bold,

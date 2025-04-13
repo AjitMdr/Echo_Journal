@@ -1,4 +1,4 @@
-import 'package:echo_fe/constants/esewa_const.dart';
+import 'package:echo_journal1/constants/esewa_const.dart';
 import 'package:esewa_flutter_sdk/esewa_flutter_sdk.dart';
 import 'package:esewa_flutter_sdk/esewa_config.dart';
 import 'package:esewa_flutter_sdk/esewa_payment.dart';

@@ -8,7 +8,7 @@ import '../../services/auth/login_service.dart';
 import '../authentication/pages/login_page.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  const ProfilePage({Key? key}) : super(key: key);
 
   @override
   _ProfilePageState createState() => _ProfilePageState();

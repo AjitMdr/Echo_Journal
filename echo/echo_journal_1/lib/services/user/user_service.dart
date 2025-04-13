@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:echo_fe/services/auth/secure_storage_service.dart';
-import 'package:echo_fe/core/configs/api_config.dart';
+import 'package:echo_journal1/services/auth/secure_storage_service.dart';
+import 'package:echo_journal1/core/configs/api_config.dart';
 import '../../models/user.dart';
 
 class UserService {

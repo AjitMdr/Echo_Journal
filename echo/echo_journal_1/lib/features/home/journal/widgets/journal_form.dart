@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:echo_fe/utils/toast_helper.dart';
+import 'package:echo_journal1/utils/toast_helper.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
@@ -258,7 +258,7 @@ class JournalFormWidgetState extends State<JournalFormWidget> {
                   ),
                   SizedBox(height: 12),
                   // Content Field
-                  SizedBox(
+                  Container(
                     height: 200, // Fixed height for content
                     child: TextField(
                       controller: contentController,

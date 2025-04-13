@@ -1,8 +1,8 @@
-import 'package:echo_fe/models/chat/conversation.dart';
-import 'package:echo_fe/features/home/chat/direct_chat_page.dart';
-import 'package:echo_fe/services/chat/chat_service.dart';
-import 'package:echo_fe/services/auth/secure_storage_service.dart';
-import 'package:echo_fe/utils/toast_helper.dart';
+import 'package:echo_journal1/models/chat/conversation.dart';
+import 'package:echo_journal1/features/home/chat/direct_chat_page.dart';
+import 'package:echo_journal1/services/chat/chat_service.dart';
+import 'package:echo_journal1/services/auth/secure_storage_service.dart';
+import 'package:echo_journal1/utils/toast_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -124,22 +124,22 @@ class _ConversationsPageState extends State<ConversationsPage> {
 
           // Content
           Expanded(
-            child:
-                _isLoading
-                    ? Center(child: CircularProgressIndicator())
-                    : _conversations.isEmpty
+            child: _isLoading
+                ? Center(child: CircularProgressIndicator())
+                : _conversations.isEmpty
                     ? _buildEmptyState()
                     : RefreshIndicator(
-                      onRefresh: _loadConversations,
-                      child: ListView.builder(
-                        key: Key('conversations_list_${_conversations.length}'),
-                        itemCount: _conversations.length,
-                        itemBuilder: (context, index) {
-                          final conversation = _conversations[index];
-                          return _buildConversationTile(conversation);
-                        },
+                        onRefresh: _loadConversations,
+                        child: ListView.builder(
+                          key: Key(
+                              'conversations_list_${_conversations.length}'),
+                          itemCount: _conversations.length,
+                          itemBuilder: (context, index) {
+                            final conversation = _conversations[index];
+                            return _buildConversationTile(conversation);
+                          },
+                        ),
                       ),
-                    ),
           ),
         ],
       ),
@@ -196,13 +196,12 @@ class _ConversationsPageState extends State<ConversationsPage> {
       margin: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       elevation: 0.5,
       color: widget.isDarkMode ? Colors.grey[900] : Colors.white,
-      shape:
-          hasUnread
-              ? RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-                side: BorderSide(color: Colors.blue, width: 1.5),
-              )
-              : RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      shape: hasUnread
+          ? RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+              side: BorderSide(color: Colors.blue, width: 1.5),
+            )
+          : RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: ListTile(
         contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         dense: true,
@@ -293,13 +292,12 @@ class _ConversationsPageState extends State<ConversationsPage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder:
-                  (context) => DirectChatPage(
-                    friendId: otherParticipant.id.toString(),
-                    friendName: otherParticipant.username,
-                    isDarkMode: widget.isDarkMode,
-                    conversationId: conversation.id.toString(),
-                  ),
+              builder: (context) => DirectChatPage(
+                friendId: otherParticipant.id.toString(),
+                friendName: otherParticipant.username,
+                isDarkMode: widget.isDarkMode,
+                conversationId: conversation.id.toString(),
+              ),
             ),
           ).then((_) => _loadConversations());
         },

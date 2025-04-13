@@ -1,7 +1,8 @@
 import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
-import 'package:echo_fe/services/auth/secure_storage_service.dart';
-import 'package:echo_fe/core/configs/api_config.dart';
+import 'package:echo_journal1/services/auth/secure_storage_service.dart';
+import 'package:echo_journal1/core/configs/api_config.dart';
 
 class FriendsService {
   final Dio _dio = Dio();

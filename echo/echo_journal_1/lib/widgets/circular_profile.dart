@@ -10,13 +10,13 @@ class CircularProfile extends StatelessWidget {
   final VoidCallback? onTap;
 
   const CircularProfile({
-    super.key,
+    Key? key,
     required this.user,
     this.size = 60,
     this.showName = true,
     this.showStatus = true,
     this.onTap,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
