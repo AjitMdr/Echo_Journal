@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
-import 'package:echo_fe/services/journal/journal_service.dart';
-import 'package:echo_fe/core/configs/theme/theme-provider.dart';
-import 'package:echo_fe/utils/toast_helper.dart';
+import 'package:echo_journal1/services/journal/journal_service.dart';
+import 'package:echo_journal1/core/configs/theme/theme-provider.dart';
+import 'package:echo_journal1/utils/toast_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import 'package:echo_fe/features/widgets/navbar.dart';
-import 'package:echo_fe/core/configs/api_config.dart';
-import 'package:echo_fe/core/providers/subscription_provider.dart';
+import 'package:echo_journal1/features/widgets/navbar.dart';
+import 'package:echo_journal1/core/configs/api_config.dart';
+import 'package:echo_journal1/core/providers/subscription_provider.dart';
 
 class AnalyticsPage extends StatefulWidget {
-  const AnalyticsPage({super.key});
+  const AnalyticsPage({Key? key}) : super(key: key);
 
   @override
   _AnalyticsPageState createState() => _AnalyticsPageState();
@@ -100,6 +100,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
       final validData = response
           .where(
             (item) =>
+                item != null &&
                 item['journal_id'] != null &&
                 item['title'] != null &&
                 item['date'] != null &&
@@ -449,7 +450,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
         title: const Text('Mood Analytics', style: TextStyle(fontSize: 16)),
         centerTitle: true,
         elevation: 0,
-        toolbarHeight: 20,
+        toolbarHeight: 48,
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
@@ -1308,7 +1309,7 @@ class _AnalyticsPageState extends State<AnalyticsPage>
       return await _journalService.getJournal(int.parse(journalId.toString()));
     } catch (e) {
       print('Error fetching journal details: $e');
-      rethrow;
+      throw e;
     }
   }
 }

@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:echo_fe/core/configs/api_config.dart';
+import 'package:echo_journal1/core/configs/api_config.dart';
 import 'package:flutter/foundation.dart';
 
 class VerifyAccountService {

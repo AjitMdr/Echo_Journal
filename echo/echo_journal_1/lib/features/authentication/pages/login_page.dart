@@ -1,6 +1,6 @@
-import 'package:echo_fe/features/authentication/pages/forgot_password_page.dart';
-import 'package:echo_fe/features/authentication/pages/signup_page.dart';
-import 'package:echo_fe/features/authentication/widgets/login_form.dart';
+import 'package:echo_journal1/features/authentication/pages/forgot_password_page.dart';
+import 'package:echo_journal1/features/authentication/pages/signup_page.dart';
+import 'package:echo_journal1/features/authentication/widgets/login_form.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/configs/theme/gradient-bg-pattern.dart';
@@ -9,9 +9,12 @@ import '../../../services/auth/login_service.dart';
 import '../../home/home_page.dart';
 import '../../../core/providers/subscription_provider.dart';
 import '../../../features/authentication/pages/otp_verification_page.dart';
+import 'verify_2fa_login_page.dart';
+import 'verify_account_page.dart';
+import '../../../features/widgets/navbar.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  const LoginPage({Key? key}) : super(key: key);
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -25,57 +28,64 @@ class _LoginPageState extends State<LoginPage> {
   String? _error;
 
   Future<void> _handleLogin() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
 
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
+      try {
+        final response = await AuthService.login(
+          _emailController.text,
+          _passwordController.text,
+        );
 
-    try {
-      final email = _emailController.text.trim();
-      final password = _passwordController.text;
-
-      final response = await AuthService.login(email, password);
-
-      if (mounted) {
-        if (response['success'] == true) {
-          // Check subscription status after successful login
-          final subscriptionProvider =
-              Provider.of<SubscriptionProvider>(context, listen: false);
-          await subscriptionProvider.checkSubscription();
-
-          // Navigate to home and remove all previous routes
-          Navigator.of(context).pushNamedAndRemoveUntil(
-            '/',
-            (Route<dynamic> route) => false,
-          );
-        } else {
-          // Handle unverified account
-          if (response['needs_verification'] == true) {
-            // Navigate to OTP verification page
-            Navigator.pushReplacement(
+        if (mounted) {
+          if (response['requires_2fa'] == true) {
+            // Navigate to 2FA verification page
+            Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => OTPVerificationPage(
-                  email: response['email'] ?? email,
+                builder: (context) => Verify2FALoginPage(
+                  email: response['email'],
+                ),
+              ),
+            );
+          } else if (response['success']) {
+            // Normal login success
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const NavBar()),
+              (route) => false,
+            );
+          } else if (response['needs_verification']) {
+            // Handle account verification
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => VerifyAccountPage(
+                  email: response['email'],
                 ),
               ),
             );
           } else {
             setState(() {
               _error = response['error'];
-              _isLoading = false;
             });
           }
         }
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _error = e.toString();
-          _isLoading = false;
-        });
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _error = e.toString();
+          });
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
   }

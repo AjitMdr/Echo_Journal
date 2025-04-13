@@ -1,6 +1,6 @@
 {
-    "name": "echo_fe",
-    "short_name": "echo_fe",
+    "name": "echo_journal1",
+    "short_name": "echo_journal1",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -1,13 +1,14 @@
-import 'package:echo_fe/common/widgets/error_message.dart';
-import 'package:echo_fe/core/configs/theme/app-styles.dart';
-import 'package:echo_fe/core/configs/theme/theme-provider.dart';
-import 'package:echo_fe/features/widgets/navbar.dart';
-import 'package:echo_fe/services/auth/login_service.dart';
-import 'package:echo_fe/services/auth/session_management.dart';
+import 'package:echo_journal1/common/widgets/error_message.dart';
+import 'package:echo_journal1/core/configs/theme/app-styles.dart';
+import 'package:echo_journal1/core/configs/theme/theme-provider.dart';
+import 'package:echo_journal1/features/widgets/navbar.dart';
+import 'package:echo_journal1/services/auth/login_service.dart';
+import 'package:echo_journal1/services/auth/session_management.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:echo_fe/features/authentication/pages/otp_verification_page.dart';
-import 'package:echo_fe/features/authentication/pages/verify_account_page.dart';
+import 'package:echo_journal1/features/authentication/pages/otp_verification_page.dart';
+import 'package:echo_journal1/features/authentication/pages/verify_account_page.dart';
+import 'package:echo_journal1/features/authentication/pages/verify_2fa_login_page.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
@@ -46,46 +47,51 @@ class _LoginFormState extends State<LoginForm> {
 
         if (!mounted) return;
 
-        if (response['success'] == true) {
-          // Start a new authenticated session with JWT token
+        if (response['requires_2fa'] == true) {
+          // Show a success message before navigating
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response['message'] ??
+                  '2FA code has been sent to your email'),
+              backgroundColor: Colors.green,
+            ),
+          );
+
+          // Navigate to 2FA verification page
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => Verify2FALoginPage(
+                email: response['email'],
+              ),
+            ),
+          );
+        } else if (response['access'] != null && response['refresh'] != null) {
+          // Non-2FA user successful login
+          await AuthService.saveTokens(response['access'], response['refresh']);
           await SessionManager.startSession();
+
           if (!mounted) return;
 
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const NavBar()),
           );
-        } else {
-          // Extract error message from nested structure
-          String errorMessage = '';
-          if (response['error'] is Map) {
-            final errorMap = response['error'] as Map;
-            if (errorMap['non_field_errors'] is List) {
-              errorMessage = errorMap['non_field_errors'][0];
-            } else {
-              errorMessage = errorMap.values.first.toString();
-            }
-          } else {
-            errorMessage =
-                response['error']?.toString() ?? 'Authentication failed';
-          }
-
-          // Check if it's a verification error
-          if (errorMessage.toLowerCase().contains('verify your account')) {
-            // Navigate to OTP verification page
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => OTPVerificationPage(
-                  email: response['email'] ?? _usernameController.text,
-                ),
+        } else if (response['needs_verification'] == true) {
+          // Account needs verification
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OTPVerificationPage(
+                email: response['email'] ?? _usernameController.text,
               ),
-            );
-          } else {
-            setState(() {
-              _errorMessage = errorMessage;
-            });
-          }
+            ),
+          );
+        } else {
+          setState(() {
+            _errorMessage =
+                response['error']?.toString() ?? 'Authentication failed';
+          });
         }
       } catch (e) {
         if (mounted) {
@@ -217,7 +223,9 @@ class _LoginFormState extends State<LoginForm> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const VerifyAccountPage(),
+                  builder: (context) => VerifyAccountPage(
+                    email: _usernameController.text,
+                  ),
                 ),
               );
             },

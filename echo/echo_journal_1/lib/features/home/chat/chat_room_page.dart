@@ -1,7 +1,7 @@
-import 'package:echo_fe/features/home/chat/widgets/message_bubble.dart';
-import 'package:echo_fe/services/chat/chat_service.dart';
-import 'package:echo_fe/utils/toast_helper.dart';
-import 'package:echo_fe/data/models/direct_message.dart';
+import 'package:echo_journal1/features/home/chat/widgets/message_bubble.dart';
+import 'package:echo_journal1/services/chat/chat_service.dart';
+import 'package:echo_journal1/utils/toast_helper.dart';
+import 'package:echo_journal1/data/models/direct_message.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -150,48 +150,49 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         children: [
           // Messages list
           Expanded(
-            child:
-                _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _messages.isEmpty
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _messages.isEmpty
                     ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.chat_bubble_outline,
-                            size: 64,
-                            color: Colors.grey,
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            'No messages yet',
-                            style: TextStyle(fontSize: 16, color: Colors.grey),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Start the conversation!',
-                            style: TextStyle(fontSize: 14, color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                    )
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.chat_bubble_outline,
+                              size: 64,
+                              color: Colors.grey,
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              'No messages yet',
+                              style:
+                                  TextStyle(fontSize: 16, color: Colors.grey),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'Start the conversation!',
+                              style:
+                                  TextStyle(fontSize: 14, color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      )
                     : ListView.builder(
-                      controller: _scrollController,
-                      padding: EdgeInsets.all(16),
-                      itemCount: _messages.length,
-                      itemBuilder: (context, index) {
-                        final message = _messages[index];
-                        final isMe =
-                            message.sender.toString() == _currentUsername;
+                        controller: _scrollController,
+                        padding: EdgeInsets.all(16),
+                        itemCount: _messages.length,
+                        itemBuilder: (context, index) {
+                          final message = _messages[index];
+                          final isMe =
+                              message.sender.toString() == _currentUsername;
 
-                        return MessageBubble(
-                          message: message,
-                          isMe: isMe,
-                          isDarkMode: widget.isDarkMode,
-                        );
-                      },
-                    ),
+                          return MessageBubble(
+                            message: message,
+                            isMe: isMe,
+                            isDarkMode: widget.isDarkMode,
+                          );
+                        },
+                      ),
           ),
           // Message input
           Container(

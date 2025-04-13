@@ -44,40 +44,36 @@ class SecureStorageService {
 
   /// Saves authentication tokens and user data securely
   static Future<void> saveAuthData({
-    String? accessToken,
-    String? refreshToken,
-    String? userId,
-    String? username,
-    String? email,
+    required String accessToken,
+    required String refreshToken,
+    required String userId,
+    required String username,
+    required String email,
   }) async {
-    // Update cache and storage for each provided value
-    if (accessToken != null) {
-      _cachedAccessToken = accessToken;
+    try {
+      // Save to storage
       await _storage.write(key: _keyAccessToken, value: accessToken);
-    }
-    if (refreshToken != null) {
-      _cachedRefreshToken = refreshToken;
       await _storage.write(key: _keyRefreshToken, value: refreshToken);
-    }
-    if (userId != null) {
-      _cachedUserId = userId;
       await _storage.write(key: _keyUserId, value: userId);
-    }
-    if (username != null) {
-      _cachedUsername = username;
       await _storage.write(key: _keyUsername, value: username);
-    }
-    if (email != null) {
-      _cachedUserEmail = email;
       await _storage.write(key: _keyUserEmail, value: email);
+      await _storage.write(
+          key: _keyLoginTimestamp,
+          value: DateTime.now().millisecondsSinceEpoch.toString());
+
+      // Update cache
+      _cachedAccessToken = accessToken;
+      _cachedRefreshToken = refreshToken;
+      _cachedUserId = userId;
+      _cachedUsername = username;
+      _cachedUserEmail = email;
+      _cachedLoginTimestamp = DateTime.now().millisecondsSinceEpoch;
+
+      debugPrint('✅ Auth data saved successfully');
+    } catch (e) {
+      debugPrint('❌ Error saving auth data: $e');
+      throw Exception('Failed to save auth data');
     }
-
-    // Update timestamp
-    _cachedLoginTimestamp = DateTime.now().millisecondsSinceEpoch;
-    await _storage.write(
-        key: _keyLoginTimestamp, value: _cachedLoginTimestamp.toString());
-
-    debugPrint('🔒 Auth data securely saved');
   }
 
   /// Gets the current authentication token (alias for getAccessToken)
@@ -174,5 +170,25 @@ class SecureStorageService {
     print('👤 Username: ${await getUsername()}');
     print('📧 Email: ${await getUserEmail()}');
     print('⏰ Login Timestamp: ${await getLoginTimestamp()}');
+  }
+
+  /// Sets access token
+  static Future<void> setAccessToken(String token) async {
+    await _storage.write(key: _keyAccessToken, value: token);
+    _cachedAccessToken = token;
+  }
+
+  /// Sets refresh token
+  static Future<void> setRefreshToken(String token) async {
+    await _storage.write(key: _keyRefreshToken, value: token);
+    _cachedRefreshToken = token;
+  }
+
+  static Future<void> deleteAccessToken() async {
+    await _storage.delete(key: _keyAccessToken);
+  }
+
+  static Future<void> deleteRefreshToken() async {
+    await _storage.delete(key: _keyRefreshToken);
   }
 }

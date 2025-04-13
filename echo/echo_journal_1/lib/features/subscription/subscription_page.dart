@@ -4,7 +4,7 @@ import '../../models/subscription/subscription.dart';
 import '../../services/subscription/subscription_service.dart';
 
 class SubscriptionPage extends StatefulWidget {
-  const SubscriptionPage({super.key});
+  const SubscriptionPage({Key? key}) : super(key: key);
 
   @override
   _SubscriptionPageState createState() => _SubscriptionPageState();
@@ -115,7 +115,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
             Text(plan.name, style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
             Text(
-              '\$${plan.price.toStringAsFixed(2)} / ${plan.durationDays} days',
+              '\Rs ${plan.price.toStringAsFixed(2)} / ${plan.durationDays} days',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),

@@ -1,13 +1,14 @@
 import 'dart:async';
-import 'package:echo_fe/core/configs/theme/app-styles.dart';
-import 'package:echo_fe/core/configs/theme/gradient-bg-pattern.dart';
-import 'package:echo_fe/core/configs/theme/theme-provider.dart';
-import 'package:echo_fe/services/auth/otp_service.dart';
+import 'package:echo_journal1/core/configs/theme/app-styles.dart';
+import 'package:echo_journal1/core/configs/theme/gradient-bg-pattern.dart';
+import 'package:echo_journal1/core/configs/theme/theme-provider.dart';
+import 'package:echo_journal1/services/auth/otp_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'login_page.dart';
-import 'package:echo_fe/utils/toast_helper.dart';
+import 'signup_page.dart';
+import 'package:echo_journal1/utils/toast_helper.dart';
 
 class OTPVerificationPage extends StatefulWidget {
   final String email;

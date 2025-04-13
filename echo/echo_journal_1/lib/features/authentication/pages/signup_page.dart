@@ -1,4 +1,4 @@
-import 'package:echo_fe/features/authentication/widgets/register_form.dart';
+import 'package:echo_journal1/features/authentication/widgets/register_form.dart';
 import 'package:flutter/material.dart';
 import 'login_page.dart';
 import 'package:provider/provider.dart';

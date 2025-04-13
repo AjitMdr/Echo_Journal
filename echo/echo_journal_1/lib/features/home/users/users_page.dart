@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:echo_fe/services/friends/friends_service.dart';
+import 'package:echo_journal1/services/friends/friends_service.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:provider/provider.dart';
-import 'package:echo_fe/core/configs/theme/theme-provider.dart';
-import 'package:echo_fe/utils/toast_helper.dart';
+import 'package:echo_journal1/core/configs/theme/theme-provider.dart';
+import 'package:echo_journal1/utils/toast_helper.dart';
 
 class UsersPage extends StatefulWidget {
   const UsersPage({super.key});
@@ -118,16 +118,15 @@ class _UsersPageState extends State<UsersPage> {
                         Icons.search,
                         color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                       ),
-                      suffixIcon:
-                          _searchController.text.isNotEmpty
-                              ? IconButton(
-                                icon: Icon(Icons.clear),
-                                onPressed: () {
-                                  _searchController.clear();
-                                  _searchUsers('');
-                                },
-                              )
-                              : null,
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: Icon(Icons.clear),
+                              onPressed: () {
+                                _searchController.clear();
+                                _searchUsers('');
+                              },
+                            )
+                          : null,
                       filled: true,
                       fillColor:
                           isDarkMode ? Colors.grey[800] : Colors.grey[200],
@@ -146,102 +145,99 @@ class _UsersPageState extends State<UsersPage> {
               ),
             ),
             Expanded(
-              child:
-                  _isLoading
-                      ? Center(child: CircularProgressIndicator())
-                      : _users.isEmpty
+              child: _isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : _users.isEmpty
                       ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.search_off,
-                              size: 64,
-                              color: Colors.grey,
-                            ),
-                            SizedBox(height: 16),
-                            Text(
-                              'No users found',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.search_off,
+                                size: 64,
                                 color: Colors.grey,
                               ),
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              'Try a different search term',
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 14,
+                              SizedBox(height: 16),
+                              Text(
+                                'No users found',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      )
+                              SizedBox(height: 8),
+                              Text(
+                                'Try a different search term',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
                       : AnimationLimiter(
-                        child: ListView.builder(
-                          padding: EdgeInsets.all(16),
-                          itemCount: _users.length,
-                          itemBuilder: (context, index) {
-                            final user = _users[index];
-                            return AnimationConfiguration.staggeredList(
-                              position: index,
-                              duration: const Duration(milliseconds: 375),
-                              child: SlideAnimation(
-                                verticalOffset: 50.0,
-                                child: FadeInAnimation(
-                                  child: Card(
-                                    color:
-                                        isDarkMode
-                                            ? Colors.grey[800]
-                                            : Colors.white,
-                                    elevation: 2,
-                                    margin: EdgeInsets.only(bottom: 8),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: ListTile(
-                                      contentPadding: EdgeInsets.all(12),
-                                      leading: CircleAvatar(
-                                        radius: 24,
-                                        backgroundColor: Colors.purple.shade100,
-                                        child: Text(
-                                          user['name']?[0]?.toUpperCase() ??
-                                              '?',
-                                          style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.purple.shade900,
-                                          ),
-                                        ),
+                          child: ListView.builder(
+                            padding: EdgeInsets.all(16),
+                            itemCount: _users.length,
+                            itemBuilder: (context, index) {
+                              final user = _users[index];
+                              return AnimationConfiguration.staggeredList(
+                                position: index,
+                                duration: const Duration(milliseconds: 375),
+                                child: SlideAnimation(
+                                  verticalOffset: 50.0,
+                                  child: FadeInAnimation(
+                                    child: Card(
+                                      color: isDarkMode
+                                          ? Colors.grey[800]
+                                          : Colors.white,
+                                      elevation: 2,
+                                      margin: EdgeInsets.only(bottom: 8),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
-                                      title: Text(
-                                        user['name'] ?? 'Unknown',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                      subtitle: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          SizedBox(height: 4),
-                                          Text(
-                                            user['email'] ?? '',
+                                      child: ListTile(
+                                        contentPadding: EdgeInsets.all(12),
+                                        leading: CircleAvatar(
+                                          radius: 24,
+                                          backgroundColor:
+                                              Colors.purple.shade100,
+                                          child: Text(
+                                            user['name']?[0]?.toUpperCase() ??
+                                                '?',
                                             style: TextStyle(
-                                              color:
-                                                  isDarkMode
-                                                      ? Colors.grey[300]
-                                                      : Colors.grey[600],
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.purple.shade900,
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                      trailing:
-                                          user['is_friend'] == true
-                                              ? Chip(
+                                        ),
+                                        title: Text(
+                                          user['name'] ?? 'Unknown',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        subtitle: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            SizedBox(height: 4),
+                                            Text(
+                                              user['email'] ?? '',
+                                              style: TextStyle(
+                                                color: isDarkMode
+                                                    ? Colors.grey[300]
+                                                    : Colors.grey[600],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        trailing: user['is_friend'] == true
+                                            ? Chip(
                                                 label: Text(
                                                   'Friend',
                                                   style: TextStyle(
@@ -251,38 +247,38 @@ class _UsersPageState extends State<UsersPage> {
                                                 ),
                                                 backgroundColor: Colors.green,
                                               )
-                                              : user['request_sent'] == true
-                                              ? Chip(
-                                                label: Text(
-                                                  'Pending',
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 12,
-                                                  ),
-                                                ),
-                                                backgroundColor: Colors.orange,
-                                              )
-                                              : IconButton(
-                                                icon: Icon(
-                                                  Icons.person_add,
-                                                  color:
-                                                      Theme.of(
+                                            : user['request_sent'] == true
+                                                ? Chip(
+                                                    label: Text(
+                                                      'Pending',
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                    backgroundColor:
+                                                        Colors.orange,
+                                                  )
+                                                : IconButton(
+                                                    icon: Icon(
+                                                      Icons.person_add,
+                                                      color: Theme.of(
                                                         context,
                                                       ).primaryColor,
-                                                ),
-                                                onPressed:
-                                                    () => _handleSendRequest(
+                                                    ),
+                                                    onPressed: () =>
+                                                        _handleSendRequest(
                                                       user,
                                                     ),
-                                              ),
+                                                  ),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            );
-                          },
+                              );
+                            },
+                          ),
                         ),
-                      ),
             ),
           ],
         ),

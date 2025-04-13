@@ -1,9 +1,9 @@
-import 'package:echo_fe/common/widgets/error_message.dart';
-import 'package:echo_fe/core/configs/theme/app-styles.dart';
-import 'package:echo_fe/core/configs/theme/theme-provider.dart';
-import 'package:echo_fe/features/authentication/pages/otp_verification_page.dart';
-import 'package:echo_fe/services/auth/register_service.dart';
-import 'package:echo_fe/utils/toast_helper.dart';
+import 'package:echo_journal1/common/widgets/error_message.dart';
+import 'package:echo_journal1/core/configs/theme/app-styles.dart';
+import 'package:echo_journal1/core/configs/theme/theme-provider.dart';
+import 'package:echo_journal1/features/authentication/pages/otp_verification_page.dart';
+import 'package:echo_journal1/services/auth/register_service.dart';
+import 'package:echo_journal1/utils/toast_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:password_strength/password_strength.dart';

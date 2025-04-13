@@ -8,6 +8,12 @@ from datetime import datetime, timedelta
 
 
 class User(AbstractUser):
+    ROLE_CHOICES = [
+        ('USER', 'Regular User'),
+        ('ADMIN', 'Administrator'),
+        ('SUPERADMIN', 'Super Administrator'),
+    ]
+
     email = models.EmailField(
         unique=True,
         validators=[EmailValidator(message="Enter a valid email address.")],
@@ -25,6 +31,12 @@ class User(AbstractUser):
         upload_to='profile_pictures/', null=True, blank=True)
 
     is_verified = models.BooleanField(default=False)
+    two_factor_enabled = models.BooleanField(default=False)
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default='USER'
+    )
 
     groups = models.ManyToManyField(
         'auth.Group',
@@ -47,6 +59,14 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+
+    def save(self, *args, **kwargs):
+        # Automatically set role based on is_staff and is_superuser
+        if self.is_superuser:
+            self.role = 'SUPERADMIN'
+        elif self.is_staff:
+            self.role = 'ADMIN'
+        super().save(*args, **kwargs)
 
     class Meta:
         db_table = 'accounts_user'  # Explicitly set the table name

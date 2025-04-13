@@ -1,9 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:echo_fe/services/auth/secure_storage_service.dart';
+import 'package:echo_journal1/services/auth/secure_storage_service.dart';
 import 'package:flutter/foundation.dart';
-import 'package:echo_fe/services/auth/session_management.dart';
-import 'package:echo_fe/core/configs/api_config.dart';
+import 'package:echo_journal1/services/auth/session_management.dart';
+import 'package:echo_journal1/core/configs/api_config.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class AuthService {
   /// 🌐 HTTP client instance with default configuration
@@ -11,7 +13,7 @@ class AuthService {
     BaseOptions(
       connectTimeout: Duration(seconds: 10),
       receiveTimeout: Duration(seconds: 10),
-      validateStatus: (status) => status != null && status < 500,
+      validateStatus: (status) => status != null && status! < 500,
       contentType: 'application/json',
       headers: {
         'Accept': 'application/json',
@@ -19,6 +21,8 @@ class AuthService {
       followRedirects: false,
     ),
   );
+
+  static final String _authPrefix = '/auth';
 
   // Initialize Dio with interceptors
   static void initializeDio() {
@@ -54,165 +58,137 @@ class AuthService {
 
   /// Authenticates user and securely stores the JWT tokens if successful
   static Future<Map<String, dynamic>> login(
-    String username,
-    String password,
-  ) async {
+      String username, String password) async {
     try {
-      final url = ApiConfig.getFullUrl(ApiConfig.tokenEndpoint);
-      debugPrint('🔐 Attempting login for user: $username');
-      debugPrint('🌐 Login URL: $url');
-
-      final response = await dio.post(
-        url,
-        data: {
+      final url = ApiConfig.getFullUrl('$_authPrefix/login/');
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
           'username': username,
           'password': password,
-        },
-        options: Options(
-          validateStatus: (status) => status != null && status < 500,
-          followRedirects: false,
-          headers: {'Accept': 'application/json'},
-        ),
+        }),
       );
 
-      debugPrint('📡 Login Response Status: ${response.statusCode}');
-      debugPrint('📡 Login Response Data: ${response.data}');
-
-      // Check if response is HTML (indicates server error)
-      final contentType = response.headers.value('content-type') ?? '';
-      if (contentType.toLowerCase().contains('text/html')) {
-        debugPrint('❌ Received HTML response instead of JSON');
-        return {
-          'success': false,
-          'error': 'Server error occurred. Please try again later.',
-        };
-      }
+      final data = json.decode(response.body);
 
       if (response.statusCode == 200) {
-        final data = response.data;
-
-        // First check if we have user data and tokens
-        if (data['user'] == null ||
-            data['access'] == null ||
-            data['refresh'] == null) {
-          debugPrint('❌ Missing required data in response');
+        // Check if 2FA is required
+        if (data['requires_2fa'] == true) {
           return {
-            'success': false,
-            'error': 'Invalid response from server',
+            'requires_2fa': true,
+            'email': data['email'],
+            'message': data['message'],
           };
         }
 
-        // Then check if account is verified
-        if (data['user']['is_verified'] == false) {
-          debugPrint('❌ Account not verified');
-          return {
-            'success': false,
-            'error':
-                'Please verify your account first. Check your email for the verification OTP.',
-            'needs_verification': true,
-            'email': data['user']['email']
-          };
-        }
-
-        // Get user ID
-        String? userId;
-        if (data['user']['id'] != null) {
-          userId = data['user']['id'].toString();
-          debugPrint('✅ Got user ID directly from response: $userId');
-        }
-
-        if (userId == null) {
-          debugPrint('❌ Could not get user ID from response');
-          return {
-            'success': false,
-            'error': 'Failed to get user ID',
-          };
-        }
-
-        // Only store tokens and user data if account is verified
+        // Save complete auth data for non-2FA users
         await SecureStorageService.saveAuthData(
           accessToken: data['access'],
           refreshToken: data['refresh'],
-          userId: userId,
-          username: data['user']['username'] ?? '',
-          email: data['user']['email'] ?? '',
+          userId: data['user']['id'].toString(),
+          username: data['user']['username'],
+          email: data['user']['email'],
         );
 
-        debugPrint(
-            '✅ Login successful and tokens stored with user ID: $userId');
-        return {'success': true, 'data': data};
-      }
-
-      // Handle error response
-      debugPrint('❌ Login failed: ${response.statusCode}');
-      if (response.data is Map && response.data['error'] is Map) {
-        final errorMap = response.data['error'] as Map;
-        if (errorMap['non_field_errors'] is List) {
-          final errorMessage = errorMap['non_field_errors'][0];
-          // Check if it's a verification error
-          if (errorMessage
-              .toString()
-              .toLowerCase()
-              .contains('verify your account')) {
-            return {
-              'success': false,
-              'error': errorMessage,
-              'needs_verification': true,
-              'email': username
-            };
-          }
-          return {'success': false, 'error': errorMessage};
-        }
-      }
-      return {
-        'success': false,
-        'error': response.data['detail'] ?? 'Authentication failed',
-      };
-    } on DioException catch (e) {
-      debugPrint('❌ DioError during login: ${e.message}');
-      if (e.type == DioExceptionType.connectionError) {
+        // Return the original response
+        return data;
+      } else {
         return {
           'success': false,
-          'error':
-              'Unable to connect to server. Please check your internet connection.',
+          'error': data['error'],
+          'needs_verification': data['needs_verification'] ?? false,
+          'email': data['email'],
         };
       }
-      // Check if response is HTML
-      final contentType = e.response?.headers.value('content-type') ?? '';
-      if (contentType.toLowerCase().contains('text/html')) {
-        return {
-          'success': false,
-          'error': 'Server error occurred. Please try again later.',
-        };
-      }
-      // Handle error response structure
-      if (e.response?.data is Map && e.response?.data['error'] is Map) {
-        final errorMap = e.response?.data['error'] as Map;
-        if (errorMap['non_field_errors'] is List) {
-          final errorMessage = errorMap['non_field_errors'][0];
-          // Check if it's a verification error
-          if (errorMessage
-              .toString()
-              .toLowerCase()
-              .contains('verify your account')) {
-            return {
-              'success': false,
-              'error': errorMessage,
-              'needs_verification': true,
-              'email': username
-            };
-          }
-          return {'success': false, 'error': errorMessage};
-        }
-      }
-      return {
-        'success': false,
-        'error': e.response?.data['detail'] ?? 'Network error occurred',
-      };
     } catch (e) {
-      debugPrint('❌ Unexpected error during login: $e');
-      return {'success': false, 'error': 'An unexpected error occurred'};
+      return {
+        'success': false,
+        'error': e.toString(),
+      };
     }
+  }
+
+  static Future<Map<String, dynamic>> verify2FALogin(
+      String email, String otp) async {
+    try {
+      final url = ApiConfig.getFullUrl('$_authPrefix/login/2fa/verify/');
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'email': email,
+          'otp': otp,
+        }),
+      );
+
+      final data = json.decode(response.body);
+
+      if (response.statusCode == 200) {
+        // Save complete auth data including user information
+        await SecureStorageService.saveAuthData(
+          accessToken: data['access'],
+          refreshToken: data['refresh'],
+          userId: data['user']['id'].toString(),
+          username: data['user']['username'],
+          email: data['user']['email'],
+        );
+
+        return {
+          'success': true,
+          'user': data['user'],
+        };
+      } else {
+        return {
+          'success': false,
+          'error': data['error'],
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'error': e.toString(),
+      };
+    }
+  }
+
+  static Future<Map<String, dynamic>> resend2FACode(String email) async {
+    try {
+      final url = ApiConfig.getFullUrl('$_authPrefix/login/2fa/resend/');
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'email': email,
+        }),
+      );
+
+      final data = json.decode(response.body);
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'message': data['message'],
+        };
+      } else {
+        return {
+          'success': false,
+          'error': data['error'],
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'error': e.toString(),
+      };
+    }
+  }
+
+  /// Save authentication tokens securely
+  static Future<void> saveTokens(
+      String accessToken, String refreshToken) async {
+    await SecureStorageService.setAccessToken(accessToken);
+    await SecureStorageService.setRefreshToken(refreshToken);
   }
 
   /// 🚪 Logs out the current user by clearing all tokens and session data

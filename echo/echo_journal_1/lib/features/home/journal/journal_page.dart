@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:echo_fe/core/configs/theme/curved-pattern.dart';
-import 'package:echo_fe/features/home/journal/widgets/journal_form.dart';
-import 'package:echo_fe/features/home/journal/widgets/journal_list.dart';
-import 'package:echo_fe/features/home/journal/widgets/journal_search.dart';
-import 'package:echo_fe/features/home/journal/widgets/journal_selector.dart';
-import 'package:echo_fe/services/journal/journal_service.dart';
+import 'package:echo_journal1/core/configs/theme/curved-pattern.dart';
+import 'package:echo_journal1/features/home/journal/widgets/journal_form.dart';
+import 'package:echo_journal1/features/home/journal/widgets/journal_list.dart';
+import 'package:echo_journal1/features/home/journal/widgets/journal_search.dart';
+import 'package:echo_journal1/features/home/journal/widgets/journal_selector.dart';
+import 'package:echo_journal1/services/journal/journal_service.dart';
 import 'package:provider/provider.dart';
-import 'package:echo_fe/core/configs/theme/theme-provider.dart';
-import 'package:echo_fe/utils/toast_helper.dart';
+import 'package:echo_journal1/core/configs/theme/theme-provider.dart';
+import 'package:echo_journal1/utils/toast_helper.dart';
 import 'package:intl/intl.dart';
-import 'package:echo_fe/core/configs/api_config.dart';
+import 'package:echo_journal1/core/configs/api_config.dart';
+import '../../../core/providers/subscription_provider.dart';
 
 class JournalPage extends StatefulWidget {
-  const JournalPage({super.key});
+  const JournalPage({Key? key}) : super(key: key);
 
   @override
   _JournalPageState createState() => _JournalPageState();
@@ -26,7 +27,7 @@ class _JournalPageState extends State<JournalPage> {
   List<Map<String, dynamic>> _journals = [];
   List<Map<String, dynamic>> _filteredJournals = [];
   bool _isLoading = false;
-  final String _selectedLanguage = 'en';
+  String _selectedLanguage = 'en';
   bool _isFormVisible = true;
   String _currentSort = 'newest';
   Map<String, dynamic> _selectedJournal = {};
@@ -108,11 +109,13 @@ class _JournalPageState extends State<JournalPage> {
     setState(() {
       if (query.isEmpty) {
         // Filter out deleted journals first
-        _filteredJournals =
-            _journals.where((j) => j['is_deleted'] != true).toList();
+        _filteredJournals = _journals
+            .where((j) => j != null && j['is_deleted'] != true)
+            .toList();
       } else {
         _filteredJournals = _journals.where((journal) {
-          if (journal['is_deleted'] == true ||
+          if (journal == null ||
+              journal['is_deleted'] == true ||
               journal['title'] == null ||
               journal['content'] == null) {
             print('Invalid or deleted journal: $journal'); // Debug log
@@ -146,7 +149,7 @@ class _JournalPageState extends State<JournalPage> {
 
       final journalList = List<Map<String, dynamic>>.from(
         response['data'],
-      ).where((j) => j['is_deleted'] != true).toList();
+      ).where((j) => j != null && j['is_deleted'] != true).toList();
       print('Parsed journals: $journalList'); // Debug log
 
       setState(() {
@@ -360,6 +363,7 @@ class _JournalPageState extends State<JournalPage> {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     bool isDarkMode = themeProvider.isDarkMode;
+    final isPremium = Provider.of<SubscriptionProvider>(context).isPremium;
 
     return Scaffold(
       floatingActionButton: !_isFormVisible
@@ -611,6 +615,8 @@ class _JournalPageState extends State<JournalPage> {
                           context,
                           journal,
                           formattedDate,
+                          isDarkMode,
+                          isPremium,
                         ),
                       );
                     }, childCount: _filteredJournals.length),
@@ -627,14 +633,16 @@ class _JournalPageState extends State<JournalPage> {
     BuildContext context,
     Map<String, dynamic> journal,
     String formattedDate,
+    bool isDarkMode,
+    bool isPremium,
   ) {
-    final isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
     final sentiment = journal['sentiment'];
 
-    Icon getSentimentIcon() {
-      if (sentiment == null) {
+    Icon? getSentimentIcon() {
+      if (!isPremium) return null;
+
+      if (sentiment == null)
         return Icon(Icons.mood, color: Colors.grey, size: 28);
-      }
 
       switch (sentiment.toString().toLowerCase()) {
         case 'positive':
@@ -684,28 +692,30 @@ class _JournalPageState extends State<JournalPage> {
                             ),
                           ),
                         ),
-                        SizedBox(width: 8),
-                        InkWell(
-                          onTap: () async {
-                            try {
-                              final result =
-                                  await _journalService.analyzeSentiment(
-                                int.parse(journal['id'].toString()),
-                              );
-                              setState(() {
-                                journal['sentiment'] = result['sentiment'];
-                              });
-                            } catch (e) {
-                              if (mounted) {
-                                ToastHelper.showError(
-                                  context,
-                                  'Failed to analyze sentiment',
+                        if (isPremium) ...[
+                          SizedBox(width: 8),
+                          InkWell(
+                            onTap: () async {
+                              try {
+                                final result =
+                                    await _journalService.analyzeSentiment(
+                                  int.parse(journal['id'].toString()),
                                 );
+                                setState(() {
+                                  journal['sentiment'] = result['sentiment'];
+                                });
+                              } catch (e) {
+                                if (mounted) {
+                                  ToastHelper.showError(
+                                    context,
+                                    'Failed to analyze sentiment',
+                                  );
+                                }
                               }
-                            }
-                          },
-                          child: getSentimentIcon(),
-                        ),
+                            },
+                            child: getSentimentIcon() ?? SizedBox(),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -750,7 +760,7 @@ class _JournalPageState extends State<JournalPage> {
                       color: isDarkMode ? Colors.white54 : Colors.black54,
                     ),
                   ),
-                  if (sentiment != null)
+                  if (isPremium && sentiment != null)
                     Text(
                       sentiment.toString().toUpperCase(),
                       style: TextStyle(

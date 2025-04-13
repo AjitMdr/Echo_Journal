@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:echo_fe/services/streak/streak_service.dart';
-import 'package:echo_fe/features/widgets/streak_badge_widget.dart';
+import 'package:echo_journal1/services/streak/streak_service.dart';
+import 'package:echo_journal1/features/widgets/streak_badge_widget.dart';
 
 class FriendCard extends StatefulWidget {
   final Map<String, dynamic> friend;
@@ -9,12 +9,12 @@ class FriendCard extends StatefulWidget {
   final bool isDarkMode;
 
   const FriendCard({
-    super.key,
+    Key? key,
     required this.friend,
     required this.onChatTap,
     required this.onUnfriend,
     this.isDarkMode = false,
-  });
+  }) : super(key: key);
 
   @override
   State<FriendCard> createState() => _FriendCardState();

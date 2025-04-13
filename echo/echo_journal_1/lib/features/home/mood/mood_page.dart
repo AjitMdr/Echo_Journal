@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:echo_fe/services/journal/journal_service.dart';
-import 'package:echo_fe/core/configs/theme/theme-provider.dart';
-import 'package:echo_fe/utils/toast_helper.dart';
+import 'package:echo_journal1/services/journal/journal_service.dart';
+import 'package:echo_journal1/core/configs/theme/theme-provider.dart';
+import 'package:echo_journal1/utils/toast_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:echo_fe/core/configs/api_config.dart';
-import 'package:echo_fe/core/providers/subscription_provider.dart';
+import 'package:echo_journal1/core/configs/api_config.dart';
 import '../../../features/subscription/subscription_check_widget.dart';
 
 class MoodPage extends StatefulWidget {
@@ -125,67 +124,6 @@ class _MoodPageState extends State<MoodPage> {
   }
 
   Future<void> _analyzeSentiment(int journalId) async {
-    // Check if user has premium access
-    final subscriptionProvider =
-        Provider.of<SubscriptionProvider>(context, listen: false);
-    final isPremium = subscriptionProvider.subscription?.status == 'ACTIVE' &&
-        subscriptionProvider.subscription?.planDetails?.planType == 'PREMIUM';
-
-    if (!isPremium) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Premium Feature'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.star,
-                color: Colors.amber,
-                size: 48,
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Mood Analysis is a premium feature',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 8),
-              Text(
-                'Upgrade to premium to unlock AI-powered mood analysis and gain insights into your emotional well-being.',
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('Maybe Later'),
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.grey[600],
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.pushNamed(context, '/subscription/plans');
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
-                foregroundColor: Colors.white,
-                elevation: 2,
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
-              child: Text('Upgrade Now'),
-            ),
-          ],
-        ),
-      );
-      return;
-    }
-
     try {
       final sentimentData = await _journalService.analyzeSentiment(journalId);
       if (!mounted) return;
@@ -494,242 +432,254 @@ class _MoodPageState extends State<MoodPage> {
   Widget build(BuildContext context) {
     final isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
 
-    return Scaffold(
-      backgroundColor: isDarkMode ? Color(0xFF121212) : Colors.grey[100],
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(70),
-        child: AppBar(
-          backgroundColor: isDarkMode ? Color(0xFF1E1E1E) : Colors.white,
-          elevation: 0,
-          title: Text(
-            'Journal Analysis',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-              color: isDarkMode ? Colors.white : Colors.black87,
+    return SubscriptionCheckWidget(
+      requirePremium: true,
+      child: Scaffold(
+        backgroundColor: isDarkMode ? Color(0xFF121212) : Colors.grey[100],
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(70),
+          child: AppBar(
+            backgroundColor: isDarkMode ? Color(0xFF1E1E1E) : Colors.white,
+            elevation: 0,
+            title: Text(
+              'Journal Analysis',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: isDarkMode ? Colors.white : Colors.black87,
+              ),
             ),
-          ),
-          centerTitle: true,
-          bottom: PreferredSize(
-            preferredSize: Size.fromHeight(40),
-            child: Container(
-              padding: EdgeInsets.fromLTRB(16, 0, 16, 4),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Container(
+            centerTitle: true,
+            bottom: PreferredSize(
+              preferredSize: Size.fromHeight(40),
+              child: Container(
+                padding: EdgeInsets.fromLTRB(16, 0, 16, 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color:
+                              isDarkMode ? Color(0xFF2C2C2C) : Colors.grey[200],
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: TextField(
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white70 : Colors.black87,
+                          ),
+                          onChanged: (value) {
+                            setState(() {
+                              _searchQuery = value;
+                              _filterJournals();
+                            });
+                          },
+                          decoration: InputDecoration(
+                            hintText: 'Search journals...',
+                            hintStyle: TextStyle(
+                              color:
+                                  isDarkMode ? Colors.white38 : Colors.black38,
+                            ),
+                            prefixIcon: Icon(
+                              Icons.search,
+                              color:
+                                  isDarkMode ? Colors.white54 : Colors.black54,
+                            ),
+                            border: InputBorder.none,
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 16),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Container(
                       height: 36,
+                      padding: EdgeInsets.symmetric(horizontal: 8),
                       decoration: BoxDecoration(
                         color:
                             isDarkMode ? Color(0xFF2C2C2C) : Colors.grey[200],
                         borderRadius: BorderRadius.circular(18),
                       ),
-                      child: TextField(
-                        style: TextStyle(
-                          color: isDarkMode ? Colors.white70 : Colors.black87,
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            _searchQuery = value;
-                            _filterJournals();
-                          });
-                        },
-                        decoration: InputDecoration(
-                          hintText: 'Search journals...',
-                          hintStyle: TextStyle(
-                            color: isDarkMode ? Colors.white38 : Colors.black38,
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: _selectedLanguage,
+                          dropdownColor:
+                              isDarkMode ? Color(0xFF2C2C2C) : Colors.grey[200],
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white70 : Colors.black87,
+                            fontSize: 13,
                           ),
-                          prefixIcon: Icon(
-                            Icons.search,
+                          icon: Icon(
+                            Icons.language,
+                            size: 18,
                             color: isDarkMode ? Colors.white54 : Colors.black54,
                           ),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                          items: [
+                            DropdownMenuItem(value: 'all', child: Text('All')),
+                            DropdownMenuItem(
+                                value: 'en', child: Text('English')),
+                            DropdownMenuItem(
+                                value: 'ne', child: Text('नेपाली')),
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedLanguage = value!;
+                              _filterJournals();
+                            });
+                          },
                         ),
                       ),
                     ),
-                  ),
-                  SizedBox(width: 8),
-                  Container(
-                    height: 36,
-                    padding: EdgeInsets.symmetric(horizontal: 8),
-                    decoration: BoxDecoration(
-                      color: isDarkMode ? Color(0xFF2C2C2C) : Colors.grey[200],
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: _selectedLanguage,
-                        dropdownColor:
+                    SizedBox(width: 8),
+                    Container(
+                      height: 36,
+                      width: 36,
+                      decoration: BoxDecoration(
+                        color:
                             isDarkMode ? Color(0xFF2C2C2C) : Colors.grey[200],
-                        style: TextStyle(
-                          color: isDarkMode ? Colors.white70 : Colors.black87,
-                          fontSize: 13,
-                        ),
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: IconButton(
                         icon: Icon(
-                          Icons.language,
+                          Icons.refresh,
                           size: 18,
                           color: isDarkMode ? Colors.white54 : Colors.black54,
                         ),
-                        items: [
-                          DropdownMenuItem(value: 'all', child: Text('All')),
-                          DropdownMenuItem(value: 'en', child: Text('English')),
-                          DropdownMenuItem(value: 'ne', child: Text('नेपाली')),
-                        ],
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedLanguage = value!;
-                            _filterJournals();
-                          });
-                        },
+                        onPressed: _loadJournals,
+                        tooltip: 'Refresh Journals',
+                        padding: EdgeInsets.zero,
                       ),
                     ),
-                  ),
-                  SizedBox(width: 8),
-                  Container(
-                    height: 36,
-                    width: 36,
-                    decoration: BoxDecoration(
-                      color: isDarkMode ? Color(0xFF2C2C2C) : Colors.grey[200],
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.refresh,
-                        size: 18,
-                        color: isDarkMode ? Colors.white54 : Colors.black54,
-                      ),
-                      onPressed: _loadJournals,
-                      tooltip: 'Refresh Journals',
-                      padding: EdgeInsets.zero,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
         ),
-      ),
-      body: _isLoading
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Theme.of(context).primaryColor,
+        body: _isLoading
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).primaryColor,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'Loading journals...',
-                    style: TextStyle(
-                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                    SizedBox(height: 16),
+                    Text(
+                      'Loading journals...',
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            )
-          : _filteredJournals.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.book_outlined,
-                        size: 80,
-                        color: isDarkMode ? Colors.white24 : Colors.black26,
-                      ),
-                      SizedBox(height: 16),
-                      Text(
-                        _journals.isEmpty
-                            ? 'No journals found'
-                            : 'No matching journals',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w500,
-                          color: isDarkMode ? Colors.white70 : Colors.black87,
+                  ],
+                ),
+              )
+            : _filteredJournals.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.book_outlined,
+                          size: 80,
+                          color: isDarkMode ? Colors.white24 : Colors.black26,
                         ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        _journals.isEmpty
-                            ? 'Start writing to see your journals here'
-                            : 'Try adjusting your search or filter',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: isDarkMode ? Colors.white38 : Colors.black45,
-                        ),
-                      ),
-                      SizedBox(height: 24),
-                      if (_journals.isEmpty)
-                        ElevatedButton.icon(
-                          onPressed: _loadJournals,
-                          icon: Icon(Icons.refresh),
-                          label: Text('Refresh'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).primaryColor,
-                            foregroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
+                        SizedBox(height: 16),
+                        Text(
+                          _journals.isEmpty
+                              ? 'No journals found'
+                              : 'No matching journals',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w500,
+                            color: isDarkMode ? Colors.white70 : Colors.black87,
                           ),
                         ),
-                    ],
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: () => _loadJournals(),
-                  color: Theme.of(context).primaryColor,
-                  child: ListView.builder(
-                    key: ValueKey(_filteredJournals.length),
-                    padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                    itemCount:
-                        _filteredJournals.length + (_hasMorePages ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (index == _filteredJournals.length) {
-                        if (_isLoadingMore) {
+                        SizedBox(height: 8),
+                        Text(
+                          _journals.isEmpty
+                              ? 'Start writing to see your journals here'
+                              : 'Try adjusting your search or filter',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isDarkMode ? Colors.white38 : Colors.black45,
+                          ),
+                        ),
+                        SizedBox(height: 24),
+                        if (_journals.isEmpty)
+                          ElevatedButton.icon(
+                            onPressed: _loadJournals,
+                            icon: Icon(Icons.refresh),
+                            label: Text('Refresh'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).primaryColor,
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  )
+                : RefreshIndicator(
+                    onRefresh: () => _loadJournals(),
+                    color: Theme.of(context).primaryColor,
+                    child: ListView.builder(
+                      key: ValueKey(_filteredJournals.length),
+                      padding:
+                          EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                      itemCount:
+                          _filteredJournals.length + (_hasMorePages ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index == _filteredJournals.length) {
+                          if (_isLoadingMore) {
+                            return Padding(
+                              padding: EdgeInsets.all(16),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Theme.of(context).primaryColor,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
                           return Padding(
                             padding: EdgeInsets.all(16),
                             child: Center(
-                              child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Theme.of(context).primaryColor,
+                              child: ElevatedButton.icon(
+                                onPressed: () => _loadJournals(loadMore: true),
+                                icon: Icon(Icons.refresh),
+                                label: Text('Load More'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      Theme.of(context).primaryColor,
+                                  foregroundColor: Colors.white,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
                                 ),
                               ),
                             ),
                           );
                         }
-                        return Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Center(
-                            child: ElevatedButton.icon(
-                              onPressed: () => _loadJournals(loadMore: true),
-                              icon: Icon(Icons.refresh),
-                              label: Text('Load More'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(context).primaryColor,
-                                foregroundColor: Colors.white,
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                  vertical: 12,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      }
-                      return _buildJournalCard(_filteredJournals[index]);
-                    },
+                        return _buildJournalCard(_filteredJournals[index]);
+                      },
+                    ),
                   ),
-                ),
+      ),
     );
   }
 }

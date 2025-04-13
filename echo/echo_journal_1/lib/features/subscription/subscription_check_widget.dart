@@ -10,10 +10,10 @@ class SubscriptionCheckWidget extends StatefulWidget {
   final bool requirePremium;
 
   const SubscriptionCheckWidget({
-    super.key,
+    Key? key,
     required this.child,
     this.requirePremium = true,
-  });
+  }) : super(key: key);
 
   @override
   _SubscriptionCheckWidgetState createState() =>

@@ -3,12 +3,12 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
-import 'package:echo_fe/services/auth/secure_storage_service.dart';
-import 'package:echo_fe/models/chat/conversation.dart';
-import 'package:echo_fe/models/chat/message.dart';
-import 'package:echo_fe/services/api/api_service.dart';
-import 'package:echo_fe/data/models/direct_message.dart';
-import 'package:echo_fe/core/configs/api_config.dart';
+import 'package:echo_journal1/services/auth/secure_storage_service.dart';
+import 'package:echo_journal1/models/chat/conversation.dart';
+import 'package:echo_journal1/models/chat/message.dart';
+import 'package:echo_journal1/services/api/api_service.dart';
+import 'package:echo_journal1/data/models/direct_message.dart';
+import 'package:echo_journal1/core/configs/api_config.dart';
 
 class ChatService {
   // Static helper to clean any IDs that might come from widgets with hash codes
@@ -294,9 +294,7 @@ class ChatService {
 
         // Update messages to mark them as read
         final messages = await getChatHistory(conversationId);
-        for (var m in messages) {
-          m.isRead = true;
-        }
+        messages.forEach((m) => m.isRead = true);
         _messagesController.add(messages);
 
         // Update conversations list and unread count

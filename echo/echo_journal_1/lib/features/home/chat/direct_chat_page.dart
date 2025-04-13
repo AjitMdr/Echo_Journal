@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'package:echo_fe/data/models/direct_message.dart';
-import 'package:echo_fe/features/home/chat/widgets/message_bubble.dart';
-import 'package:echo_fe/services/chat/chat_service.dart';
-import 'package:echo_fe/services/auth/secure_storage_service.dart';
-import 'package:echo_fe/utils/toast_helper.dart';
+import 'package:echo_journal1/data/models/direct_message.dart';
+import 'package:echo_journal1/features/home/chat/widgets/message_bubble.dart';
+import 'package:echo_journal1/services/chat/chat_service.dart';
+import 'package:echo_journal1/services/auth/secure_storage_service.dart';
+import 'package:echo_journal1/utils/toast_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:echo_fe/core/configs/api_config.dart';
+import 'package:echo_journal1/core/configs/api_config.dart';
 
 class DirectChatPage extends StatefulWidget {
   final String friendId;
@@ -39,11 +39,11 @@ class _DirectChatPageState extends State<DirectChatPage> {
   String? _conversationId;
   StreamSubscription? _messageSubscription;
   bool _isSending = false;
-  final bool _hasUnreadMessages = true;
+  bool _hasUnreadMessages = true;
   String? _loadError;
   bool _isConnected = false;
   Timer? _reconnectionTimer;
-  final int _retryAttempt = 0;
+  int _retryAttempt = 0;
 
   @override
   void initState() {

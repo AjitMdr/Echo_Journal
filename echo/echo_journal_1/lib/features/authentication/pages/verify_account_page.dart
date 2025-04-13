@@ -1,13 +1,14 @@
-import 'package:echo_fe/common/widgets/error_message.dart';
-import 'package:echo_fe/core/configs/theme/app-styles.dart';
-import 'package:echo_fe/core/configs/theme/theme-provider.dart';
-import 'package:echo_fe/features/authentication/pages/otp_verification_page.dart';
-import 'package:echo_fe/services/auth/verify_account_service.dart';
+import 'package:echo_journal1/common/widgets/error_message.dart';
+import 'package:echo_journal1/core/configs/theme/app-styles.dart';
+import 'package:echo_journal1/core/configs/theme/theme-provider.dart';
+import 'package:echo_journal1/features/authentication/pages/otp_verification_page.dart';
+import 'package:echo_journal1/services/auth/verify_account_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class VerifyAccountPage extends StatefulWidget {
-  const VerifyAccountPage({super.key});
+  final String email;
+  const VerifyAccountPage({Key? key, required this.email}) : super(key: key);
 
   @override
   _VerifyAccountPageState createState() => _VerifyAccountPageState();

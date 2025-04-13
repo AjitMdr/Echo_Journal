@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:echo_fe/services/friends/friends_service.dart';
-import 'package:echo_fe/features/home/friends/widgets/friend_card.dart';
-import 'package:echo_fe/utils/toast_helper.dart';
-import 'package:echo_fe/features/home/chat/direct_chat_page.dart';
-import 'package:echo_fe/features/home/friends/widgets/user_search.dart';
-import 'package:echo_fe/features/home/friends/widgets/friend_requests.dart';
-import 'package:echo_fe/features/home/friends/widgets/friends_list.dart';
+import 'package:echo_journal1/services/friends/friends_service.dart';
+import 'package:echo_journal1/features/home/friends/widgets/friend_card.dart';
+import 'package:echo_journal1/utils/toast_helper.dart';
+import 'package:echo_journal1/features/home/chat/direct_chat_page.dart';
+import 'package:echo_journal1/features/home/friends/widgets/user_search.dart';
+import 'package:echo_journal1/features/home/friends/widgets/friend_requests.dart';
+import 'package:echo_journal1/features/home/friends/widgets/friends_list.dart';
 
 class FriendsPage extends StatefulWidget {
   final bool isDarkMode;
 
-  const FriendsPage({super.key, this.isDarkMode = false});
+  const FriendsPage({Key? key, this.isDarkMode = false}) : super(key: key);
 
   @override
   _FriendsPageState createState() => _FriendsPageState();

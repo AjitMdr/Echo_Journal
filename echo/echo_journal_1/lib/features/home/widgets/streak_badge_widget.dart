@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:echo_fe/services/streak/streak_service.dart';
+import 'package:echo_journal1/services/streak/streak_service.dart';
 
 class StreakBadgeWidget extends StatefulWidget {
   const StreakBadgeWidget({super.key});

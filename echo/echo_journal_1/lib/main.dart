@@ -1,15 +1,17 @@
-import 'package:echo_fe/core/configs/theme/theme-provider.dart';
-import 'package:echo_fe/features/authentication/pages/login_page.dart';
-import 'package:echo_fe/features/widgets/navbar.dart';
+import 'package:echo_journal1/core/configs/theme/theme-provider.dart';
+import 'package:echo_journal1/features/authentication/pages/login_page.dart';
+import 'package:echo_journal1/features/widgets/navbar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:echo_fe/services/auth/session_management.dart';
-import 'package:echo_fe/services/auth/secure_storage_service.dart';
-import 'package:echo_fe/services/auth/login_service.dart';
-import 'package:echo_fe/features/home/analytics/analytics_page.dart';
-import 'package:echo_fe/features/subscription/subscription_plans_page.dart';
+import 'package:echo_journal1/services/auth/session_management.dart';
+import 'package:echo_journal1/services/auth/secure_storage_service.dart';
+import 'package:echo_journal1/services/auth/login_service.dart';
+import 'package:echo_journal1/features/home/analytics/analytics_page.dart';
+import 'package:echo_journal1/features/subscription/subscription_plans_page.dart';
+import 'package:echo_journal1/features/settings/account_settings_page.dart';
 import 'core/providers/subscription_provider.dart';
+import 'features/admin/pages/dashboard_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -111,11 +113,34 @@ class _MyAppState extends State<MyApp> {
             return MaterialPageRoute(builder: (_) => const NavBar());
           case '/login':
             return MaterialPageRoute(builder: (_) => const LoginPage());
-          case '/subscription/plans':
+          case '/subscription_plans':
             return MaterialPageRoute(
                 builder: (_) => const SubscriptionPlansPage());
           case '/mood_analysis':
             return MaterialPageRoute(builder: (_) => const AnalyticsPage());
+          case '/account_settings':
+            return MaterialPageRoute(
+                builder: (_) => const AccountSettingsPage());
+          // Admin routes
+          case '/admin':
+            return MaterialPageRoute(
+                builder: (_) => const AdminDashboardPage());
+          case '/admin/users':
+            // TODO: Implement Users page
+            return MaterialPageRoute(
+                builder: (_) => const AdminDashboardPage());
+          case '/admin/journals':
+            // TODO: Implement Journals page
+            return MaterialPageRoute(
+                builder: (_) => const AdminDashboardPage());
+          case '/admin/subscriptions':
+            // TODO: Implement Subscriptions page
+            return MaterialPageRoute(
+                builder: (_) => const AdminDashboardPage());
+          case '/admin/analytics':
+            // TODO: Implement Analytics page
+            return MaterialPageRoute(
+                builder: (_) => const AdminDashboardPage());
           default:
             return MaterialPageRoute(builder: (_) => const NavBar());
         }

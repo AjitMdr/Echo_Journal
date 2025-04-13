@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:echo_fe/services/friends/friends_service.dart';
+import 'package:echo_journal1/services/friends/friends_service.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'package:echo_fe/utils/toast_helper.dart';
-import 'package:echo_fe/features/home/chat/direct_chat_page.dart';
-import 'package:echo_fe/features/widgets/streak_badge_widget.dart';
-import 'package:echo_fe/services/auth/secure_storage_service.dart';
+import 'package:echo_journal1/utils/toast_helper.dart';
+import 'package:echo_journal1/features/home/chat/direct_chat_page.dart';
+import 'package:echo_journal1/features/widgets/streak_badge_widget.dart';
+import 'package:echo_journal1/services/auth/secure_storage_service.dart';
 
 class FriendsListWidget extends StatefulWidget {
   final bool isDarkMode;
@@ -98,9 +98,9 @@ class _FriendsListWidgetState extends State<FriendsListWidget> {
               onPressed: () => Navigator.of(context).pop(false),
             ),
             TextButton(
+              child: Text('Unfriend'),
               style: TextButton.styleFrom(foregroundColor: Colors.red),
               onPressed: () => Navigator.of(context).pop(true),
-              child: Text('Unfriend'),
             ),
           ],
         );

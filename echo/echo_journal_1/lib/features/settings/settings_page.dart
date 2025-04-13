@@ -1,12 +1,13 @@
-import 'package:echo_fe/core/configs/theme/theme-provider.dart';
-import 'package:echo_fe/features/authentication/pages/login_page.dart';
-import 'package:echo_fe/services/auth/login_service.dart';
+import 'package:echo_journal1/core/configs/theme/theme-provider.dart';
+import 'package:echo_journal1/features/authentication/pages/login_page.dart';
+import 'package:echo_journal1/services/auth/login_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../profile/profile_page.dart';
+import 'account_settings_page.dart';
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key});
+  const SettingsPage({Key? key}) : super(key: key);
 
   @override
   _SettingsPageState createState() => _SettingsPageState();
@@ -63,6 +64,19 @@ class _SettingsPageState extends State<SettingsPage> {
                     context,
                     MaterialPageRoute(
                         builder: (context) => const ProfilePage()),
+                  ),
+                  isDarkMode: isDarkMode,
+                ),
+                Divider(
+                    height: 1,
+                    color: isDarkMode ? Colors.grey[700] : Colors.grey[300]),
+                _buildSettingsItem(
+                  icon: Icons.manage_accounts,
+                  title: 'Account',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const AccountSettingsPage()),
                   ),
                   isDarkMode: isDarkMode,
                 ),

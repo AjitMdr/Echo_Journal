@@ -7,7 +7,7 @@ import '../../core/providers/subscription_provider.dart';
 import 'package:provider/provider.dart';
 
 class SubscriptionPlansPage extends StatefulWidget {
-  const SubscriptionPlansPage({super.key});
+  const SubscriptionPlansPage({Key? key}) : super(key: key);
 
   @override
   _SubscriptionPlansPageState createState() => _SubscriptionPlansPageState();
@@ -39,16 +39,14 @@ class _SubscriptionPlansPageState extends State<SubscriptionPlansPage> {
       final isPremium = subscriptionProvider.subscription?.status == 'ACTIVE' &&
           subscriptionProvider.subscription?.planDetails?.planType == 'PREMIUM';
 
-      // If user has active premium subscription, redirect to home
-      if (isPremium) {
-        if (mounted) {
-          Navigator.pushNamedAndRemoveUntil(
-            context,
-            '/',
-            (route) => false,
-          );
-          return;
-        }
+      // If user has active premium subscription, go to home
+      if (isPremium && mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/',
+          (route) => false,
+        );
+        return;
       }
 
       // Otherwise load plans
@@ -222,7 +220,7 @@ class _SubscriptionPlansPageState extends State<SubscriptionPlansPage> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '\Rs.${plan.price.toStringAsFixed(2)}',
+                    '\Rs ${plan.price.toStringAsFixed(2)}',
                     style: const TextStyle(
                       fontSize: 36,
                       fontWeight: FontWeight.bold,
@@ -286,7 +284,7 @@ class _SubscriptionPlansPageState extends State<SubscriptionPlansPage> {
               isPremium,
               isPremium,
               subtitle: !isPremium
-                  ? 'Upgrade to premium for \Rs.${plan.price.toStringAsFixed(2)}/month'
+                  ? 'Upgrade to premium for \Rs ${plan.price.toStringAsFixed(2)}/month'
                   : null,
             ),
             _buildFeatureItem('Analytics', true, isPremium),
@@ -329,7 +327,9 @@ class _SubscriptionPlansPageState extends State<SubscriptionPlansPage> {
           Icon(
             isIncluded ? Icons.check_circle : Icons.cancel,
             color: isIncluded
-                ? (isPremium ? Colors.white : Colors.green)
+                ? (isPremium
+                    ? const Color.fromARGB(255, 0, 255, 0)
+                    : Colors.green)
                 : Colors.red,
             size: 20,
           ),
@@ -414,6 +414,14 @@ class _SubscriptionPlansPageState extends State<SubscriptionPlansPage> {
         title: const Text('Premium Features'),
         backgroundColor: isDarkMode ? Colors.grey[850] : Colors.white,
         elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/',
+            (route) => false,
+          ),
+        ),
       ),
       body: _error != null
           ? Center(
@@ -481,7 +489,8 @@ class _SubscriptionPlansPageState extends State<SubscriptionPlansPage> {
                           return 0;
                         });
                       })
-                      .map((plan) => _buildPlanCard(plan)),
+                      .map((plan) => _buildPlanCard(plan))
+                      .toList(),
                 ],
               ),
             ),

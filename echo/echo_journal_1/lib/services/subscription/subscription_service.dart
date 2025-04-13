@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:echo_fe/core/configs/api_config.dart';
+import 'package:echo_journal1/core/configs/api_config.dart';
 import '../../models/subscription/plan.dart';
 import '../../models/subscription/subscription.dart';
 import '../../models/subscription/payment.dart';
