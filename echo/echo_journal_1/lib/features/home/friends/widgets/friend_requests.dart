@@ -4,6 +4,7 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:echo_journal1/utils/toast_helper.dart';
 import 'package:echo_journal1/services/auth/secure_storage_service.dart';
+import 'package:echo_journal1/core/configs/api_config.dart';
 
 class FriendRequestsWidget extends StatefulWidget {
   final bool isDarkMode;
@@ -232,14 +233,20 @@ class _FriendRequestsWidgetState extends State<FriendRequestsWidget> {
                       leading: CircleAvatar(
                         radius: 24,
                         backgroundColor: Colors.blue.shade100,
-                        child: Text(
-                          fromUser['username'][0].toUpperCase(),
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue.shade900,
-                          ),
-                        ),
+                        backgroundImage: fromUser['profile_picture_url'] != null
+                            ? NetworkImage(
+                                '${ApiConfig.baseUrl.split('/api')[0]}${fromUser['profile_picture_url']}')
+                            : null,
+                        child: fromUser['profile_picture_url'] == null
+                            ? Text(
+                                fromUser['username'][0].toUpperCase(),
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue.shade900,
+                                ),
+                              )
+                            : null,
                       ),
                       title: Text(
                         fromUser['username'],

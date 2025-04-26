@@ -1,8 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:echo_journal1/features/widgets/streak_badge_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:echo_journal1/core/configs/theme/theme-provider.dart';
+import 'package:echo_journal1/services/profile_service.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -12,98 +14,138 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  String? username = "John Doe"; // Static username for now
-  String? email = "john@example.com"; // Static email for now
-  String? profilePictureUrl; // Will use default image
+  String? username;
+  String? email;
+  String? profilePictureUrl;
   bool isLoading = false;
-
-  // To pick an image for profile picture
   final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
-    // Removed _loadProfileData() call since we're using static data
+    _loadProfileData();
   }
 
-  // Load profile data from cache or API
   Future<void> _loadProfileData() async {
-    // Commented out for now - will implement service calls later
-    /*setState(() {
+    setState(() {
       isLoading = true;
     });
 
     try {
-      final profileData = await ProfileService.getCachedProfile();
-      if (profileData != null) {
-        setState(() {
-          username = profileData['username'];
-          email = profileData['email'];
-          profilePictureUrl = profileData['profile_picture'];
-        });
-      } else {
-        final profile = await ProfileService.fetchProfile();
-        setState(() {
-          username = profile['username'];
-          email = profile['email'];
-          profilePictureUrl = profile['profile_picture'];
-        });
-      }
+      final profileData = await ProfileService.getProfile();
+      setState(() {
+        username = profileData['username'];
+        email = profileData['email'];
+        profilePictureUrl = profileData['profile_picture'];
+      });
     } catch (e) {
-      print('Error loading profile: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading profile: $e')),
+      );
     } finally {
       setState(() {
         isLoading = false;
       });
-    }*/
-  }
-
-  // Method to pick and update profile picture
-  Future<void> _updateProfilePicture() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      // Commented out service call for now
-      /*setState(() {
-        isLoading = true;
-      });
-      try {
-        File imageFile = File(pickedFile.path);
-        await ProfileService.updateProfilePicture(imageFile);
-        await _loadProfileData();
-      } catch (e) {
-        print('Error updating profile picture: $e');
-      } finally {
-        setState(() {
-          isLoading = false;
-        });
-      }*/
     }
   }
 
-  // Method to update user profile
+  Future<void> _updateProfilePicture() async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+
+      if (pickedFile == null) return;
+
+      setState(() {
+        isLoading = true;
+      });
+
+      File imageFile = File(pickedFile.path);
+
+      try {
+        final response = await ProfileService.updateProfilePicture(imageFile);
+        setState(() {
+          profilePictureUrl = response['profile_picture'];
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Profile picture updated successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } catch (e) {
+        String errorMessage = e.toString();
+        if (errorMessage.contains('Unauthorized') ||
+            errorMessage.contains('Session expired')) {
+          // Handle authentication error
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Please log in again to continue'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 5),
+            ),
+          );
+          // TODO: Navigate to login screen or handle re-authentication
+          // Navigator.of(context).pushReplacementNamed('/login');
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error updating profile picture: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error selecting image: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   Future<void> _updateProfile() async {
     if (username == null || email == null) {
-      print('Please fill in all fields');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please fill in all fields')),
+      );
       return;
     }
 
-    // Commented out service call for now
-    /*setState(() {
+    setState(() {
       isLoading = true;
     });
 
     try {
-      final updatedProfileData = {'username': username, 'email': email};
+      final updatedProfileData = {
+        'username': username,
+        'email': email,
+      };
 
       await ProfileService.updateProfile(updatedProfileData);
       await _loadProfileData();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Profile updated successfully')),
+      );
     } catch (e) {
-      print('Error updating profile: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error updating profile: $e')),
+      );
     } finally {
       setState(() {
         isLoading = false;
       });
-    }*/
+    }
   }
 
   @override
@@ -121,24 +163,41 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Profile Picture
                     Center(
-                      child: GestureDetector(
-                        onTap: _updateProfilePicture,
-                        child: CircleAvatar(
-                          radius: 60,
-                          backgroundImage: profilePictureUrl != null
-                              ? NetworkImage(profilePictureUrl!)
-                              : AssetImage('assets/default_profile.png')
-                                  as ImageProvider,
-                        ),
+                      child: Stack(
+                        children: [
+                          GestureDetector(
+                            onTap: _updateProfilePicture,
+                            child: CircleAvatar(
+                              radius: 60,
+                              backgroundImage: profilePictureUrl != null
+                                  ? NetworkImage(profilePictureUrl!)
+                                  : AssetImage('assets/default_profile.png')
+                                      as ImageProvider,
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).primaryColor,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.camera_alt,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     SizedBox(height: 20),
-                    // Streak and Badges
                     StreakBadgeWidget(isDarkMode: isDarkMode),
                     SizedBox(height: 20),
-                    // Username Field
                     TextField(
                       decoration: InputDecoration(
                         labelText: 'Username',
@@ -152,7 +211,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       controller: TextEditingController(text: username),
                     ),
                     SizedBox(height: 10),
-                    // Email Field
                     TextField(
                       decoration: InputDecoration(
                         labelText: 'Email',
@@ -166,7 +224,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       controller: TextEditingController(text: email),
                     ),
                     SizedBox(height: 20),
-                    // Update Profile Button
                     Center(
                       child: ElevatedButton(
                         onPressed: _updateProfile,

@@ -115,6 +115,7 @@ class FriendsService {
               'name': otherUser['username'] as String,
               'username': otherUser['username'] as String,
               'email': otherUser['email'] as String? ?? '',
+              'profile_picture_url': otherUser['profile_picture_url'],
               'friendship_id': friendshipId ?? '',
               'created_at': friendship['created_at'] as String? ?? '',
               'current_streak': otherUser['current_streak'] as int? ?? 0,

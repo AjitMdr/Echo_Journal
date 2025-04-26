@@ -11,6 +11,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.core.cache import cache
 import logging
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 
 # """imports for otp """
 
@@ -88,6 +90,8 @@ from rest_framework.decorators import action
 from .models import Streak, Badge, UserBadge
 from .serializers import StreakSerializer, BadgeSerializer, UserBadgeSerializer
 
+import threading
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -149,159 +153,51 @@ def login(request):
     return Response({'error': error_message}, status=status.HTTP_400_BAD_REQUEST)
 
 
+def send_mail_async(subject, message, recipient_list):
+    """Send email asynchronously"""
+    def _send_mail_async():
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.EMAIL_HOST_USER,
+                recipient_list,
+                fail_silently=False,
+            )
+        except Exception as e:
+            logger.error(f"Error sending email to {recipient_list}: {e}")
+
+    thread = threading.Thread(target=_send_mail_async)
+    thread.start()
+    return True
+
+
 def send_2fa_login_otp(email, otp):
     """Send 2FA OTP for login"""
     subject = 'Login Verification Code'
     message = f'Your verification code for login is: {otp}\nThis code is valid for 5 minutes.'
-
-    try:
-        send_mail(
-            subject,
-            message,
-            settings.EMAIL_HOST_USER,
-            [email],
-            fail_silently=False,
-        )
-        return True
-    except Exception as e:
-        logger.error(f"Error sending 2FA login OTP to {email}: {e}")
-        return False
-
-
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def verify_2fa_login(request):
-    """Verify 2FA code during login"""
-    try:
-        email = request.data.get('email')
-        otp = request.data.get('otp')
-
-        if not email or not otp:
-            return Response(
-                {'error': 'Email and verification code are required'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Get OTP from cache
-        cache_key = f"2fa_login_otp_{email}"
-        cached_data = cache.get(cache_key)
-
-        if not cached_data:
-            return Response(
-                {'error': 'Verification code has expired. Please login again.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        if str(otp) != str(cached_data['otp']):
-            return Response(
-                {'error': 'Invalid verification code'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        try:
-            user = User.objects.get(id=cached_data['user_id'])
-            refresh = RefreshToken.for_user(user)
-
-            # Clear the OTP cache
-            cache.delete(cache_key)
-
-            return Response({
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-                'user': {
-                    'username': user.username,
-                    'email': user.email,
-                    'id': user.id,
-                    'is_verified': user.is_verified
-                }
-            }, status=status.HTTP_200_OK)
-
-        except User.DoesNotExist:
-            return Response(
-                {'error': 'User not found'},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-    except Exception as e:
-        logger.error(f"Error during 2FA verification: {str(e)}")
-        return Response(
-            {'error': 'An error occurred during verification'},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
-
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def resend_2fa_login_otp(request):
-    """Resend 2FA code during login"""
-    try:
-        email = request.data.get('email')
-
-        if not email:
-            return Response(
-                {'error': 'Email is required'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        cache_key = f"2fa_login_otp_{email}"
-        cached_data = cache.get(cache_key)
-
-        if not cached_data:
-            return Response(
-                {'error': 'No active login session found. Please login again.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Generate new OTP
-        new_otp = generate_otp()
-        cached_data['otp'] = new_otp
-        # Reset timeout to 5 minutes
-        cache.set(cache_key, cached_data, timeout=300)
-
-        # Send new OTP
-        if not send_2fa_login_otp(email, new_otp):
-            return Response(
-                {'error': 'Failed to send verification code'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-        return Response({
-            'message': 'New verification code sent successfully',
-            'email': email
-        }, status=status.HTTP_200_OK)
-
-    except Exception as e:
-        logger.error(f"Error during 2FA code resend: {str(e)}")
-        return Response(
-            {'error': 'An error occurred while resending verification code'},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
-# function to create otp and send it
-
-
-def generate_otp():
-    """Generate a 6-digit OTP"""
-    return str(random.randint(100000, 999999))
+    return send_mail_async(subject, message, [email])
 
 
 def send_otp_email(email, otp):
     """Send OTP to user's email"""
     subject = 'Email Verification OTP'
     message = f'Your OTP for email verification is: {otp}\nThis OTP is valid for 10 minutes.'
+    return send_mail_async(subject, message, [email])
 
-    try:
-        send_mail(
-            subject,
-            message,
-            settings.EMAIL_HOST_USER,
-            [email],
-            fail_silently=False,
-        )
-        return True
-    except Exception as e:
-        logger.error(f"Error sending OTP email to {email}: {e}")
-        return False
+
+def send_password_reset_otp_email(email, otp):
+    """Send OTP for password reset to user's email"""
+    subject = 'Password Reset OTP - Echo Journal'
+    message = f'''Hello!
+
+Your OTP for password reset is: {otp}
+
+This OTP is valid for 10 minutes. If you didn't request this password reset, please ignore this email.
+
+Best regards,
+Echo Journal Team'''
+    return send_mail_async(subject, message, [email])
 
 # sign up initiation
 
@@ -509,25 +405,29 @@ def resend_otp(request):
 
 
 # forgot password api
-@api_view(['POST'])  # Add GET if you need GET requests too
+@api_view(['POST'])
 @permission_classes([AllowAny])
 def forgot_password(request):
     """
     Forgot password view that sends OTP
     """
-    if request.method != 'POST':
-        return Response(
-            {'error': 'Method not allowed'},
-            status=status.HTTP_405_METHOD_NOT_ALLOWED
-        )
-
     try:
-        data = request.data
-        email = data.get('email')
+        email = request.data.get('email')
+        logger.info(f"Password reset requested for email: {email}")
 
         if not email:
             return Response(
-                {'error': 'Email is required'},
+                {'success': False, 'error': 'Email is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate email format
+        try:
+            validate_email(email)
+        except ValidationError as e:
+            logger.warning(f"Invalid email format: {email}")
+            return Response(
+                {'success': False, 'error': 'Invalid email format'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -535,13 +435,15 @@ def forgot_password(request):
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
+            logger.warning(f"No account found for email: {email}")
             return Response(
-                {'error': 'No account found with this email'},
+                {'success': False, 'error': 'No account found with this email'},
                 status=status.HTTP_404_NOT_FOUND
             )
 
         # Generate OTP
         otp = generate_otp()
+        logger.info(f"OTP generated for email: {email}")
 
         # Store OTP in cache
         cache_key = f"password_reset_otp_{email}"
@@ -551,13 +453,23 @@ def forgot_password(request):
         }, timeout=600)  # 10 minutes expiry
 
         # Send OTP via email
-        if not send_password_reset_otp_email(email, otp):
+        try:
+            if not send_password_reset_otp_email(email, otp):
+                logger.error(f"Failed to send OTP email to: {email}")
+                return Response(
+                    {'success': False, 'error': 'Failed to send OTP email'},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            logger.info(f"OTP email sent successfully to: {email}")
+        except Exception as e:
+            logger.error(f"Error sending OTP email: {str(e)}")
             return Response(
-                {'error': 'Failed to send OTP email'},
+                {'success': False, 'error': 'Failed to send OTP email'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
         return Response({
+            'success': True,
             'message': 'OTP has been sent to your email',
             'email': email
         }, status=status.HTTP_200_OK)
@@ -566,34 +478,11 @@ def forgot_password(request):
         logger.error(f"Error during password reset request: {str(e)}")
         return Response(
             {
-                'error': 'An error occurred while processing the request',
-                'details': str(e)
+                'success': False,
+                'error': 'An error occurred while processing the request'
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-
-# send mail function
-
-
-def send_password_reset_otp_email(email, otp):
-    """Send OTP for password reset to user's email"""
-    subject = 'Password Reset OTP'
-    message = f'Your OTP for password reset is: {otp}\nThis OTP is valid for 10 minutes.'
-
-    try:
-        send_mail(
-            subject,
-            message,
-            settings.EMAIL_HOST_USER,
-            [email],
-            fail_silently=False,
-        )
-        return True
-    except Exception as e:
-        logger.error(f"Error sending password reset OTP email to {email}: {e}")
-        return False
-
-# verify otp api
 
 
 @api_view(['POST'])
@@ -606,7 +495,14 @@ def verify_otp_and_reset_password(request):
 
         if not all([email, otp, new_password]):
             return Response(
-                {'error': 'Email, OTP, and new password are required'},
+                {'success': False, 'error': 'Email, OTP, and new password are required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate password length
+        if len(new_password) < 8:
+            return Response(
+                {'success': False, 'error': 'Password must be at least 8 characters long'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -616,45 +512,53 @@ def verify_otp_and_reset_password(request):
 
         if not cached_data:
             return Response(
-                {'error': 'OTP expired or invalid'},
+                {'success': False, 'error': 'OTP has expired. Please request a new one'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         if str(otp) != str(cached_data['otp']):
             return Response(
-                {'error': 'Invalid OTP'},
+                {'success': False, 'error': 'Invalid OTP'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         try:
             user = User.objects.get(id=cached_data['user_id'])
+
+            # Set new password
+            user.set_password(new_password)
+            user.save()
+
+            # Clear the OTP cache
+            cache.delete(cache_key)
+
+            # Generate new tokens for automatic login
+            refresh = RefreshToken.for_user(user)
+
+            return Response({
+                'success': True,
+                'message': 'Password has been reset successfully',
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email
+                }
+            }, status=status.HTTP_200_OK)
+
         except User.DoesNotExist:
             return Response(
-                {'error': 'User not found'},
+                {'success': False, 'error': 'User not found'},
                 status=status.HTTP_404_NOT_FOUND
             )
-
-        # Set new password
-        user.set_password(new_password)
-        user.save()
-
-        # Clear the OTP cache
-        cache.delete(cache_key)
-
-        return Response(
-            {'message': 'Password has been reset successfully'},
-            status=status.HTTP_200_OK
-        )
 
     except Exception as e:
         logger.error(f"Error during password reset: {str(e)}")
         return Response(
-            {'error': 'An error occurred during password reset',
-                'details': str(e)},
+            {'success': False, 'error': 'An error occurred during password reset'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-
-# resend otp api
 
 
 @api_view(['POST'])
@@ -665,7 +569,7 @@ def resend_password_reset_otp(request):
 
         if not email:
             return Response(
-                {'error': 'Email is required'},
+                {'success': False, 'error': 'Email is required'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -673,32 +577,29 @@ def resend_password_reset_otp(request):
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             return Response(
-                {'error': 'No account found with this email'},
+                {'success': False, 'error': 'No account found with this email'},
                 status=status.HTTP_404_NOT_FOUND
-            )
-
-        cache_key = f"password_reset_otp_{email}"
-        cached_data = cache.get(cache_key)
-
-        if not cached_data:
-            return Response(
-                {'error': 'No active password reset request found. Please initiate password reset again.'},
-                status=status.HTTP_400_BAD_REQUEST
             )
 
         # Generate new OTP
         new_otp = generate_otp()
-        cached_data['otp'] = new_otp
-        cache.set(cache_key, cached_data, timeout=600)  # Reset timeout
+        cache_key = f"password_reset_otp_{email}"
+
+        # Store new OTP in cache
+        cache.set(cache_key, {
+            'otp': new_otp,
+            'user_id': user.id
+        }, timeout=600)  # 10 minutes expiry
 
         # Send new OTP
         if not send_password_reset_otp_email(email, new_otp):
             return Response(
-                {'error': 'Failed to send OTP email'},
+                {'success': False, 'error': 'Failed to send OTP email'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
         return Response({
+            'success': True,
             'message': 'New OTP sent successfully',
             'email': email
         }, status=status.HTTP_200_OK)
@@ -706,10 +607,7 @@ def resend_password_reset_otp(request):
     except Exception as e:
         logger.error(f"Error during OTP resend: {str(e)}")
         return Response(
-            {
-                'error': 'An error occurred while resending OTP',
-                'details': str(e)
-            },
+            {'success': False, 'error': 'An error occurred while resending OTP'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
@@ -740,27 +638,63 @@ def update_profile(request):
 
 
 @api_view(['PUT'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def change_password(request):
     """Change user password"""
-    current_password = request.data.get('current_password')
-    new_password = request.data.get('new_password')
+    try:
+        current_password = request.data.get('current_password')
+        new_password = request.data.get('new_password')
 
-    if not current_password or not new_password:
-        return Response({'error': 'Both current and new passwords are required'}, status=status.HTTP_400_BAD_REQUEST)
+        if not current_password or not new_password:
+            return Response(
+                {'error': 'Both current and new passwords are required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-    user = request.user
-    if not check_password(current_password, user.password):
-        return Response({'error': 'Current password is incorrect'}, status=status.HTTP_400_BAD_REQUEST)
+        # Validate new password length
+        if len(new_password) < 8:
+            return Response(
+                {'error': 'New password must be at least 8 characters long'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-    user.set_password(new_password)
-    user.save()
-    return Response({'message': 'Password updated successfully'})
+        user = request.user
+        if not check_password(current_password, user.password):
+            return Response(
+                {'error': 'Current password is incorrect'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Check if new password is different from current
+        if check_password(new_password, user.password):
+            return Response(
+                {'error': 'New password must be different from current password'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user.set_password(new_password)
+        user.save()
+
+        # Generate new tokens since password changed
+        refresh = RefreshToken.for_user(user)
+
+        return Response({
+            'message': 'Password updated successfully',
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logger.error(f"Error changing password: {str(e)}")
+        return Response(
+            {'error': 'An error occurred while changing password'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 @api_view(['POST'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser])
 def update_profile_picture(request):
@@ -770,6 +704,7 @@ def update_profile_picture(request):
     # Debugging - print user model class and available fields
     print(f"User model: {user.__class__.__name__}")
     print(f"User model fields: {[f.name for f in user._meta.fields]}")
+    print(f"Request headers: {request.headers}")
 
     if 'profile_picture' not in request.FILES:
         return Response({'error': 'No image file provided'}, status=status.HTTP_400_BAD_REQUEST)
@@ -785,6 +720,7 @@ def update_profile_picture(request):
             'data': serializer.data
         }, status=status.HTTP_200_OK)
     except Exception as e:
+        print(f"Error saving profile picture: {str(e)}")
         return Response({
             'error': f'Error saving profile picture: {str(e)}'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -798,6 +734,19 @@ class StreakViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Streak.objects.filter(user=self.request.user)
 
+    def _get_streak_emoji(self, streak_count):
+        """Return appropriate emoji based on streak count"""
+        if streak_count == 0:
+            return '✨'  # Starting streak
+        elif streak_count < 7:
+            return '🔥'  # Fire for early streaks
+        elif streak_count < 30:
+            return '⚡'  # Lightning for good progress
+        elif streak_count < 100:
+            return '🌟'  # Star for excellent progress
+        else:
+            return '👑'  # Crown for amazing streaks
+
     def _get_streak_response(self, streak):
         """Helper method to get consistent streak response"""
         # Check if streak is current, if not, reset it
@@ -810,15 +759,14 @@ class StreakViewSet(viewsets.ModelViewSet):
             streak.save()
 
         emoji = self._get_streak_emoji(streak.current_streak)
-        print(f"Debug - Raw emoji: {emoji}")
 
         response_data = {
             'current_streak': streak.current_streak,
             'longest_streak': streak.longest_streak,
-            'last_journal_date': streak.last_journal_date,
-            'emoji': emoji
+            'last_journal_date': streak.last_journal_date.strftime('%Y-%m-%d') if streak.last_journal_date else None,
+            'streak_emoji': emoji,  # Changed from 'emoji' to 'streak_emoji' for clarity
+            'days_text': f"{streak.current_streak} {'day' if streak.current_streak == 1 else 'days'}"
         }
-        print(f"Debug - Full response data: {response_data}")
         return response_data
 
     @action(detail=False, methods=['get'])
@@ -839,18 +787,90 @@ class StreakViewSet(viewsets.ModelViewSet):
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    def _get_streak_emoji(self, streak_count):
-        """Return appropriate emoji based on streak count"""
-        if streak_count == 0:
-            return '💫'  # Using raw emoji
-        elif streak_count < 7:
-            return '🔥'
-        elif streak_count < 30:
-            return '⚡'
-        elif streak_count < 100:
-            return '🌟'
-        else:
-            return '👑'
+    @action(detail=False, methods=['get'])
+    def leaderboard(self, request):
+        """Get leaderboard data with pagination"""
+        try:
+            page = int(request.query_params.get('page', 1))
+            page_size = int(request.query_params.get('page_size', 10))
+            leaderboard_type = request.query_params.get('type', 'overall')
+
+            logger.debug(f'Received leaderboard_type: {leaderboard_type}')
+
+            queryset = Streak.objects.select_related(
+                'user').order_by('-current_streak')
+
+            if leaderboard_type == 'friend':
+                try:
+                    # Get friend IDs from both user1 and user2 relationships
+                    friend_ids = list(Friendship.objects.filter(
+                        Q(user1=request.user) | Q(user2=request.user)
+                    ).values_list('user1', 'user2').distinct())
+
+                    # Flatten the list and remove the current user's ID
+                    friend_ids = [
+                        user_id for pair in friend_ids for user_id in pair if user_id != request.user.id]
+
+                    logger.debug(
+                        f'Friend IDs for user {request.user.id}: {friend_ids}')
+                    queryset = queryset.filter(user_id__in=friend_ids)
+                except Exception as e:
+                    logger.error(f'Error getting friends: {str(e)}')
+                    queryset = queryset.filter(user_id=request.user.id)
+
+            total_count = queryset.count()
+            start = (page - 1) * page_size
+            end = start + page_size
+            streaks = queryset[start:end]
+
+            leaderboard_data = []
+            for index, streak in enumerate(streaks, start=start + 1):
+                profile_picture_url = None
+                if streak.user.profile_picture:
+                    try:
+                        profile_picture_url = request.build_absolute_uri(
+                            streak.user.profile_picture.url)
+                    except Exception as e:
+                        logger.error(
+                            f'Error getting profile picture URL: {str(e)}')
+
+                leaderboard_data.append({
+                    'rank': index,
+                    'user_id': streak.user.id,
+                    'username': streak.user.username,
+                    'days': f"{streak.current_streak} {'day' if streak.current_streak == 1 else 'days'}",
+                    'profile_picture': profile_picture_url,
+                    'is_current_user': streak.user.id == request.user.id
+                })
+
+            return Response({
+                'results': leaderboard_data,
+                'total_count': total_count,
+                'current_page': page,
+                'total_pages': (total_count + page_size - 1) // page_size
+            })
+        except Exception as e:
+            logger.error(f'Leaderboard error: {str(e)}')
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def _get_rank_badge(self, rank):
+        """Return appropriate badge emoji based on rank"""
+        if rank == 1:
+            return '🥇'  # First place medal
+        elif rank == 2:
+            return '🥈'  # Second place medal
+        elif rank == 3:
+            return '🥉'  # Third place medal
+        elif rank <= 10:
+            return '🏅'  # Sports medal for top 10
+        elif rank <= 50:
+            return '⭐'  # Star for top 50
+        elif rank <= 100:
+            return '✨'  # Sparkles for top 100
+        return '🎯'  # Default badge for other ranks
 
 
 class BadgeViewSet(viewsets.ModelViewSet):
@@ -1009,5 +1029,132 @@ def toggle_two_factor(request):
         logger.error(f"Error updating 2FA status: {str(e)}")
         return Response(
             {'error': 'Failed to update 2FA settings'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+def generate_otp():
+    """Generate a 6-digit OTP"""
+    return str(random.randint(100000, 999999))
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def verify_2fa_login(request):
+    """Verify 2FA OTP and complete login"""
+    try:
+        email = request.data.get('email')
+        otp = request.data.get('otp')
+
+        if not email or not otp:
+            return Response(
+                {'error': 'Email and OTP are required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Get OTP from cache
+        cache_key = f"2fa_login_otp_{email}"
+        cached_data = cache.get(cache_key)
+
+        if not cached_data:
+            return Response(
+                {'error': 'OTP has expired. Please request a new one.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if str(otp) != str(cached_data['otp']):
+            return Response(
+                {'error': 'Invalid OTP'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user = User.objects.get(id=cached_data['user_id'])
+
+            # Clear OTP from cache
+            cache.delete(cache_key)
+
+            # Generate JWT tokens
+            refresh = RefreshToken.for_user(user)
+
+            return Response({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+                'user': {
+                    'username': user.username,
+                    'email': user.email,
+                    'id': user.id,
+                    'is_verified': user.is_verified,
+                    'role': user.role
+                }
+            }, status=status.HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'User not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    except Exception as e:
+        logger.error(f"Error during 2FA verification: {str(e)}")
+        return Response(
+            {'error': 'An error occurred during verification'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def resend_2fa_login_otp(request):
+    """Resend 2FA OTP for login"""
+    try:
+        email = request.data.get('email')
+
+        if not email:
+            return Response(
+                {'error': 'Email is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'User not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if not user.two_factor_enabled:
+            return Response(
+                {'error': '2FA is not enabled for this user'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Generate new OTP
+        new_otp = generate_otp()
+        cache_key = f"2fa_login_otp_{email}"
+
+        # Store OTP in cache
+        cache.set(cache_key, {
+            'otp': new_otp,
+            'user_id': user.id
+        }, timeout=300)  # 5 minutes expiry
+
+        # Send new OTP
+        if not send_2fa_login_otp(email, new_otp):
+            return Response(
+                {'error': 'Failed to send OTP email'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response({
+            'message': 'New 2FA code has been sent to your email',
+            'email': email
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logger.error(f"Error resending 2FA OTP: {str(e)}")
+        return Response(
+            {'error': 'An error occurred while resending 2FA code'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )

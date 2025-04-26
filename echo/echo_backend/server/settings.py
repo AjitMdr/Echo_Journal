@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'mood_prediction_np',
     'mood_prediction_en',
     'subscription',
+    'admin_api',
 ]
 
 # Channels configuration
@@ -163,7 +164,11 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'journalecho1@gmail.com'
-EMAIL_HOST_PASSWORD = "mzrr neoi nfad xram"
+EMAIL_HOST_PASSWORD = "bkcw psny cohg rtsf"
+
+# Add email timeout settings
+EMAIL_TIMEOUT = 30  # seconds
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 CACHES = {
     'default': {
@@ -182,21 +187,20 @@ REST_FRAMEWORK = {
     ),
 }
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=200),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': False,
     'ALGORITHM': 'HS256',
-    'SIGNING_KEY': '#rjc933%1y_2w$f$n5*o=kvo$wg9#!3$-ew-2lwy3q)e07wvq5',
-    'VERIFYING_KEY': '#rjc933%1y_2w$f$n5*o=kvo$wg9#!3$-ew-2lwy3q)e07wvq5',
+    'SIGNING_KEY': '#rjc933%1y_2w$f$n5o=kvo$wg9#!3$-ew-2lwy3q)e07wvq5',
+    'VERIFYING_KEY': '#rjc933%1y_2w$f$n5o=kvo$wg9#!3$-ew-2lwy3q)e07wvq5',
     'AUDIENCE': 'Echo',
     'ISSUER': 'Echo',
     'AUTH_HEADER_TYPES': ('Bearer',),
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
 }
-
 
 # Logging Configuration
 LOGGING = {

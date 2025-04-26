@@ -74,51 +74,12 @@ class _RegisterPageUIState extends State<RegisterPageUI>
                         margin: const EdgeInsets.only(bottom: 24),
                         child: Column(
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: isDarkMode
-                                    ? Colors.grey[850]
-                                    : Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: isDarkMode
-                                        ? Colors.black.withOpacity(0.3)
-                                        : Colors.black.withOpacity(0.1),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 5),
-                                  ),
-                                ],
-                              ),
-                              child: Icon(
-                                Icons.book_rounded,
-                                size: 48,
-                                color: isDarkMode
-                                    ? Colors.white
-                                    : const Color(0xFFFF758C),
-                              ),
+                            Image.asset(
+                              'assets/images/logo.png',
+                              height: 120,
+                              width: 120,
                             ),
                             const SizedBox(height: 16),
-                            Text(
-                              'Welcome to Echo Journal',
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color:
-                                    isDarkMode ? Colors.white : Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Your personal space for reflection',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: isDarkMode
-                                    ? Colors.white70
-                                    : Colors.black54,
-                              ),
-                            ),
                           ],
                         ),
                       ),
@@ -220,7 +181,7 @@ class _RegisterPageUIState extends State<RegisterPageUI>
                         child: Column(
                           children: [
                             Text(
-                              'Why Choose Echo Journal?',
+                              'Features',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,

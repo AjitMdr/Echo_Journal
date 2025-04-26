@@ -83,25 +83,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 Divider(
                     height: 1,
                     color: isDarkMode ? Colors.grey[700] : Colors.grey[300]),
-                _buildSettingsItem(
-                  icon: Icons.lock_outline,
-                  title: 'Privacy',
-                  onTap: () {
-                    // Navigate to Privacy settings
-                  },
-                  isDarkMode: isDarkMode,
-                ),
-                Divider(
-                    height: 1,
-                    color: isDarkMode ? Colors.grey[700] : Colors.grey[300]),
-                _buildSettingsItem(
-                  icon: Icons.notifications_none,
-                  title: 'Notifications',
-                  onTap: () {
-                    // Navigate to Notifications settings
-                  },
-                  isDarkMode: isDarkMode,
-                ),
               ], isDarkMode),
               _buildSettingsCard([
                 _buildSettingsItem(
@@ -117,17 +98,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
               ], isDarkMode),
               _buildSettingsCard([
-                _buildSettingsItem(
-                  icon: Icons.help_outline,
-                  title: 'Help Center',
-                  onTap: () {
-                    // Navigate to Help Center
-                  },
-                  isDarkMode: isDarkMode,
-                ),
-                Divider(
-                    height: 1,
-                    color: isDarkMode ? Colors.grey[700] : Colors.grey[300]),
                 _buildSettingsItem(
                   icon: Icons.info_outline,
                   title: 'About',

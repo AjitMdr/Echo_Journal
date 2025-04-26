@@ -88,7 +88,7 @@ class _SubscriptionPlansPageState extends State<SubscriptionPlansPage> {
       final esewaService = Esewa();
 
       // Convert price to paisa (cents) for eSewa
-      final priceInPaisa = (plan.price * 100).round();
+      final priceInPaisa = (plan.price).round();
 
       // Start eSewa payment process
       await esewaService.pay(
@@ -220,7 +220,7 @@ class _SubscriptionPlansPageState extends State<SubscriptionPlansPage> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '\Rs ${plan.price.toStringAsFixed(2)}',
+                    '\$${plan.price.toStringAsFixed(2)}',
                     style: const TextStyle(
                       fontSize: 36,
                       fontWeight: FontWeight.bold,
@@ -283,9 +283,6 @@ class _SubscriptionPlansPageState extends State<SubscriptionPlansPage> {
               'AI-powered Mood Analysis',
               isPremium,
               isPremium,
-              subtitle: !isPremium
-                  ? 'Upgrade to premium for \Rs ${plan.price.toStringAsFixed(2)}/month'
-                  : null,
             ),
             _buildFeatureItem('Analytics', true, isPremium),
             _buildFeatureItem('Streaks', true, isPremium),
@@ -327,9 +324,7 @@ class _SubscriptionPlansPageState extends State<SubscriptionPlansPage> {
           Icon(
             isIncluded ? Icons.check_circle : Icons.cancel,
             color: isIncluded
-                ? (isPremium
-                    ? const Color.fromARGB(255, 0, 255, 0)
-                    : Colors.green)
+                ? (isPremium ? Colors.white : Colors.green)
                 : Colors.red,
             size: 20,
           ),
@@ -414,14 +409,6 @@ class _SubscriptionPlansPageState extends State<SubscriptionPlansPage> {
         title: const Text('Premium Features'),
         backgroundColor: isDarkMode ? Colors.grey[850] : Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pushNamedAndRemoveUntil(
-            context,
-            '/',
-            (route) => false,
-          ),
-        ),
       ),
       body: _error != null
           ? Center(

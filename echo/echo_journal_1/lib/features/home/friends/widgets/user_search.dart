@@ -4,6 +4,7 @@ import 'package:echo_journal1/services/friends/friends_service.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:echo_journal1/utils/toast_helper.dart';
 import 'package:echo_journal1/features/home/chat/direct_chat_page.dart';
+import 'package:echo_journal1/core/configs/api_config.dart';
 
 class UserSearchWidget extends StatefulWidget {
   final bool isDarkMode;
@@ -587,14 +588,21 @@ class _UserSearchWidgetState extends State<UserSearchWidget> {
                             leading: CircleAvatar(
                               radius: 24,
                               backgroundColor: Colors.purple.shade100,
-                              child: Text(
-                                user['username']?[0]?.toUpperCase() ?? '?',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.purple.shade900,
-                                ),
-                              ),
+                              backgroundImage: user['profile_image'] != null
+                                  ? NetworkImage(
+                                      '${ApiConfig.baseUrl.replaceAll('/api', '')}${user['profile_image']}')
+                                  : null,
+                              child: user['profile_image'] == null
+                                  ? Text(
+                                      user['username']?[0]?.toUpperCase() ??
+                                          '?',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.purple.shade900,
+                                      ),
+                                    )
+                                  : null,
                             ),
                             title: Text(
                               user['username'] ?? 'Unknown',

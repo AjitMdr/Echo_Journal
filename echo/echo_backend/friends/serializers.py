@@ -43,9 +43,8 @@ class FriendRequestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FriendRequest
-        fields = ['id', 'from_user', 'to_user',
-                  'to_user_id', 'status', 'created_at']
-
+        fields = ['id', 'from_user', 'to_user', 'to_user_id', 'status', 'created_at']
+        
     def validate(self, data):
         """
         Check that:
@@ -104,6 +103,7 @@ class FriendshipSerializer(serializers.ModelSerializer):
         user2 = data.get('user2', None)
 
         if user1 == user2:
-            raise serializers.ValidationError("Cannot create friendship with yourself.")
+            raise serializers.ValidationError(
+                "Cannot create friendship with yourself.")
 
         return data

@@ -9,6 +9,7 @@ urlpatterns = [
     path('api/journal/', include('journal.urls')),
     path('api/friends/', include('friends.urls')),
     path('api/direct-chat/', include('direct_chat.urls')),
+    path('api/admin/', include('admin_api.urls')),
     # For token authentication
     path('api-token-auth/', auth_views.obtain_auth_token),
 ]

@@ -169,4 +169,56 @@ class StreakService {
       return _getDefaultStreakData();
     }
   }
+
+  Future<Map<String, dynamic>> getLeaderboard({
+    String type = 'overall',
+    int page = 1,
+    int pageSize = 10,
+  }) async {
+    try {
+      debugPrint('🔄 Getting leaderboard data from API');
+      final token = await SecureStorageService.getAccessToken();
+      final isLoggedIn = await SecureStorageService.isLoggedIn();
+
+      if (!isLoggedIn || token == null) {
+        debugPrint('❌ User not logged in or no token found');
+        throw Exception('Please log in to view the leaderboard');
+      }
+
+      // Build URL with query parameters
+      final queryParams = {
+        'type': type,
+        'page': page.toString(),
+        'page_size': pageSize.toString(),
+      };
+
+      final uri =
+          Uri.parse(ApiConfig.getFullUrl('$authPrefix/streaks/leaderboard/'))
+              .replace(queryParameters: queryParams);
+
+      debugPrint('🔄 Making API request to: $uri');
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      debugPrint('🔄 Response status: ${response.statusCode}');
+      debugPrint('🔄 Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data;
+      } else {
+        debugPrint('❌ Failed to get leaderboard: ${response.statusCode}');
+        throw Exception('Failed to load leaderboard data');
+      }
+    } catch (e) {
+      debugPrint('❌ Error getting leaderboard data: $e');
+      throw Exception('Failed to load leaderboard data: $e');
+    }
+  }
 }

@@ -1,2 +1,6 @@
 venv/
 *.sqlite3.DS_Store
+.DS_Store
+echo_journal1/echo/echo_backend/media/profile_pictures/
+echo_journal1/echo/echo_backend/bert_model
+echo_journal1/echo/echo_backend/dataset

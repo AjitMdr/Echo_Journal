@@ -2,7 +2,7 @@
 from django.db import models
 from django.core.validators import EmailValidator
 from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.models import User
+
 from django.utils import timezone
 from datetime import datetime, timedelta
 
@@ -67,6 +67,15 @@ class User(AbstractUser):
         elif self.is_staff:
             self.role = 'ADMIN'
         super().save(*args, **kwargs)
+
+    @property
+    def friends(self):
+        """Get all friends of this user through friendships"""
+        friend_ids = self.friendships_as_user.values_list(
+            'friend_id', flat=True)
+        friend_ids = list(
+            friend_ids) + list(self.friendships_as_friend.values_list('user_id', flat=True))
+        return User.objects.filter(id__in=friend_ids)
 
     class Meta:
         db_table = 'accounts_user'  # Explicitly set the table name
@@ -151,3 +160,27 @@ class UserBadge(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.badge.name}"
+
+
+class Friendship(models.Model):
+    user = models.ForeignKey(
+        User, related_name='friendships', on_delete=models.CASCADE)
+    friend = models.ForeignKey(
+        User, related_name='friend_of', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['user', 'friend']
+        indexes = [
+            models.Index(fields=['user']),
+            models.Index(fields=['friend']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} is friends with {self.friend.username}"
+
+
+# Add a property to User model to easily access friends
+User.add_to_class('friends', property(lambda self: User.objects.filter(
+    id__in=self.friendships.values_list('friend_id', flat=True)
+)))

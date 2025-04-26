@@ -14,11 +14,22 @@ class AccountSettingsPage extends StatefulWidget {
 class _AccountSettingsPageState extends State<AccountSettingsPage> {
   bool _twoFactorEnabled = false;
   bool _isLoading = false;
+  final _currentPasswordController = TextEditingController();
+  final _newPasswordController = TextEditingController();
+  bool _obscureCurrentPassword = true;
+  bool _obscureNewPassword = true;
 
   @override
   void initState() {
     super.initState();
     _loadTwoFactorStatus();
+  }
+
+  @override
+  void dispose() {
+    _currentPasswordController.dispose();
+    _newPasswordController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadTwoFactorStatus() async {
@@ -89,69 +100,63 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     }
   }
 
-  Future<void> _showDeleteAccountDialog() async {
-    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-    final isDarkMode = themeProvider.isDarkMode;
-
-    return showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: isDarkMode ? Colors.grey[850] : Colors.white,
-        title: Text(
-          'Delete Account',
-          style: TextStyle(
-            color: isDarkMode ? Colors.white : Colors.black,
-          ),
+  Future<void> _handleChangePassword() async {
+    if (_currentPasswordController.text.isEmpty ||
+        _newPasswordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill in all password fields'),
+          backgroundColor: Colors.red,
         ),
-        content: Text(
-          'Are you sure you want to delete your account? This action cannot be undone.',
-          style: TextStyle(
-            color: isDarkMode ? Colors.white70 : Colors.black87,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(
-              'Cancel',
-              style: TextStyle(
-                color: isDarkMode ? Colors.white70 : Colors.black87,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: _handleDeleteAccount,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-  }
+      );
+      return;
+    }
 
-  Future<void> _handleDeleteAccount() async {
-    Navigator.of(context).pop(); // Close the dialog
+    // Validate new password length
+    if (_newPasswordController.text.length < 8) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('New password must be at least 8 characters long'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // TODO: Implement account deletion API call
-      await Future.delayed(const Duration(seconds: 1));
-      await AuthService.logout();
+      final result = await AuthService.changePassword(
+        _currentPasswordController.text,
+        _newPasswordController.text,
+      );
 
       if (mounted) {
-        Navigator.of(context)
-            .pushNamedAndRemoveUntil('/login', (route) => false);
+        if (result['success']) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message']),
+              backgroundColor: Colors.green,
+            ),
+          );
+          _currentPasswordController.clear();
+          _newPasswordController.clear();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['error']),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error deleting account: ${e.toString()}'),
+            content: Text('Error changing password: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );
@@ -220,7 +225,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               Container(
                 decoration: BoxDecoration(
                   color: isDarkMode ? Colors.grey[850] : Colors.white,
@@ -233,24 +238,129 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                     ),
                   ],
                 ),
-                child: ListTile(
-                  leading: Icon(
-                    Icons.delete_forever,
-                    color: Colors.red,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.lock_outline,
+                            color: isDarkMode ? Colors.white70 : Colors.black87,
+                          ),
+                          const SizedBox(width: 16),
+                          Text(
+                            'Change Password',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: isDarkMode ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _currentPasswordController,
+                        obscureText: _obscureCurrentPassword,
+                        decoration: InputDecoration(
+                          labelText: 'Current Password',
+                          labelStyle: TextStyle(
+                            color: isDarkMode ? Colors.white70 : Colors.black54,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color:
+                                  isDarkMode ? Colors.white24 : Colors.black12,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Theme.of(context).primaryColor,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureCurrentPassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color:
+                                  isDarkMode ? Colors.white70 : Colors.black54,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscureCurrentPassword =
+                                    !_obscureCurrentPassword;
+                              });
+                            },
+                          ),
+                        ),
+                        style: TextStyle(
+                          color: isDarkMode ? Colors.white : Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _newPasswordController,
+                        obscureText: _obscureNewPassword,
+                        decoration: InputDecoration(
+                          labelText: 'New Password',
+                          labelStyle: TextStyle(
+                            color: isDarkMode ? Colors.white70 : Colors.black54,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color:
+                                  isDarkMode ? Colors.white24 : Colors.black12,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Theme.of(context).primaryColor,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureNewPassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color:
+                                  isDarkMode ? Colors.white70 : Colors.black54,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscureNewPassword = !_obscureNewPassword;
+                              });
+                            },
+                          ),
+                        ),
+                        style: TextStyle(
+                          color: isDarkMode ? Colors.white : Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _handleChangePassword,
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text(_isLoading
+                              ? 'Changing Password...'
+                              : 'Change Password'),
+                        ),
+                      ),
+                    ],
                   ),
-                  title: Text(
-                    'Delete Account',
-                    style: TextStyle(
-                      color: Colors.red,
-                    ),
-                  ),
-                  subtitle: Text(
-                    'Permanently delete your account and all data',
-                    style: TextStyle(
-                      color: isDarkMode ? Colors.white70 : Colors.black54,
-                    ),
-                  ),
-                  onTap: _isLoading ? null : _showDeleteAccountDialog,
                 ),
               ),
             ],

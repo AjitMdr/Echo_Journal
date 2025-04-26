@@ -6,9 +6,6 @@ import 'package:provider/provider.dart';
 import '../../../core/configs/theme/gradient-bg-pattern.dart';
 import '../../../core/configs/theme/theme-provider.dart';
 import '../../../services/auth/login_service.dart';
-import '../../home/home_page.dart';
-import '../../../core/providers/subscription_provider.dart';
-import '../../../features/authentication/pages/otp_verification_page.dart';
 import 'verify_2fa_login_page.dart';
 import 'verify_account_page.dart';
 import '../../../features/widgets/navbar.dart';
@@ -104,6 +101,15 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Logo
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 32.0),
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      height: 120,
+                      width: 120,
+                    ),
+                  ),
                   // Container for the login form and "Don't have an account?" button
                   Container(
                     padding: const EdgeInsets.all(24),

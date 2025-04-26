@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'login_page.dart';
-import 'signup_page.dart';
 import 'package:echo_journal1/utils/toast_helper.dart';
 
 class OTPVerificationPage extends StatefulWidget {

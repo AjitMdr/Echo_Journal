@@ -22,6 +22,8 @@ class JournalFormWidget extends StatefulWidget {
 class JournalFormWidgetState extends State<JournalFormWidget> {
   final titleController = TextEditingController();
   final contentController = TextEditingController();
+  final titleFocusNode = FocusNode();
+  final contentFocusNode = FocusNode();
   String? editingJournalId;
   final FlutterTts flutterTts = FlutterTts();
   final stt.SpeechToText _speech = stt.SpeechToText();
@@ -29,6 +31,8 @@ class JournalFormWidgetState extends State<JournalFormWidget> {
   String _recognizedText = '';
   String _selectedLanguage = 'en';
   bool _isNepaliMode = false;
+  bool _isAnyFieldFocused = false;
+  TextEditingController? _activeController;
 
   // A set of Nepali Unicode character ranges
   static final _nepaliRange = RegExp(r'[\u0900-\u097F]');
@@ -39,8 +43,28 @@ class JournalFormWidgetState extends State<JournalFormWidget> {
   void initState() {
     super.initState();
     _initializeSpeech();
-    // Add listener to content controller for language detection
     contentController.addListener(_detectLanguage);
+
+    // Add listeners to focus nodes
+    titleFocusNode.addListener(() {
+      if (titleFocusNode.hasFocus) {
+        _activeController = titleController;
+      }
+      setState(() {
+        _isAnyFieldFocused =
+            titleFocusNode.hasFocus || contentFocusNode.hasFocus;
+      });
+    });
+
+    contentFocusNode.addListener(() {
+      if (contentFocusNode.hasFocus) {
+        _activeController = contentController;
+      }
+      setState(() {
+        _isAnyFieldFocused =
+            titleFocusNode.hasFocus || contentFocusNode.hasFocus;
+      });
+    });
   }
 
   // Method to detect language based on text content
@@ -183,29 +207,32 @@ class JournalFormWidgetState extends State<JournalFormWidget> {
                     ),
                   ),
                 ),
-                SizedBox(width: 8),
-                // Microphone button
-                Container(
-                  height: 36,
-                  width: 36,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _isListening
-                        ? Colors.red.withOpacity(0.1)
-                        : Colors.grey.withOpacity(0.1),
-                  ),
-                  child: IconButton(
-                    padding: EdgeInsets.zero,
-                    icon: Icon(
-                      _isListening ? Icons.mic : Icons.mic_none,
-                      color: _isListening ? Colors.red : labelColor,
-                      size: 20,
+                if (_isAnyFieldFocused) ...[
+                  SizedBox(width: 8),
+                  // Microphone button
+                  Container(
+                    height: 36,
+                    width: 36,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _isListening
+                          ? Colors.red.withOpacity(0.1)
+                          : Colors.grey.withOpacity(0.1),
                     ),
-                    onPressed: _isListening ? _stopListening : _startListening,
-                    tooltip:
-                        _isListening ? 'Stop Recording' : 'Start Recording',
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      icon: Icon(
+                        _isListening ? Icons.mic : Icons.mic_none,
+                        color: _isListening ? Colors.red : labelColor,
+                        size: 20,
+                      ),
+                      onPressed:
+                          _isListening ? _stopListening : _startListening,
+                      tooltip:
+                          _isListening ? 'Stop Recording' : 'Start Recording',
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -238,6 +265,7 @@ class JournalFormWidgetState extends State<JournalFormWidget> {
                   // Title Field
                   TextField(
                     controller: titleController,
+                    focusNode: titleFocusNode,
                     style: TextStyle(color: textColor, fontSize: 15),
                     decoration: InputDecoration(
                       labelText: _isNepaliMode ? 'शीर्षक' : 'Title',
@@ -262,6 +290,7 @@ class JournalFormWidgetState extends State<JournalFormWidget> {
                     height: 200, // Fixed height for content
                     child: TextField(
                       controller: contentController,
+                      focusNode: contentFocusNode,
                       style: TextStyle(color: textColor, fontSize: 15),
                       maxLines: null,
                       expands: true,
@@ -384,7 +413,9 @@ class JournalFormWidgetState extends State<JournalFormWidget> {
           if (!mounted) return;
           setState(() {
             _recognizedText = result.recognizedWords;
-            contentController.text = _recognizedText;
+            if (_activeController != null) {
+              _activeController!.text = _recognizedText;
+            }
           });
         },
         localeId: _isNepaliMode ? 'ne-NP' : 'en-US',
@@ -410,6 +441,8 @@ class JournalFormWidgetState extends State<JournalFormWidget> {
   void dispose() {
     titleController.dispose();
     contentController.dispose();
+    titleFocusNode.dispose();
+    contentFocusNode.dispose();
     flutterTts.stop();
     super.dispose();
   }

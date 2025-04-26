@@ -30,7 +30,7 @@ class Command(BaseCommand):
             plan_type='PREMIUM',
             defaults={
                 'name': 'Premium Plan',
-                'price': 990,  # Monthly subscription fee
+                'price': 9.99,  # Monthly subscription fee
                 'duration_days': 30,  # Monthly plan
                 'description': 'All features including AI-powered mood analysis',
                 'features': {

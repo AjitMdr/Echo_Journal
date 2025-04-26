@@ -196,111 +196,142 @@ class _ConversationsPageState extends State<ConversationsPage> {
       margin: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       elevation: 0.5,
       color: widget.isDarkMode ? Colors.grey[900] : Colors.white,
-      shape: hasUnread
-          ? RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-              side: BorderSide(color: Colors.blue, width: 1.5),
-            )
-          : RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      child: ListTile(
-        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        dense: true,
-        leading: Stack(
-          children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundColor:
-                  hasUnread ? Colors.blue.shade200 : Colors.blue.shade100,
-              child: Text(
-                otherParticipant.username.isNotEmpty
-                    ? otherParticipant.username[0].toUpperCase()
-                    : '?',
-                style: TextStyle(
-                  color: Colors.blue.shade900,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            if (hasUnread)
-              Positioned(
-                right: 0,
-                top: 0,
-                child: Container(
-                  padding: EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color:
-                          widget.isDarkMode ? Colors.grey[900]! : Colors.white,
-                      width: 1.5,
-                    ),
-                  ),
-                  constraints: BoxConstraints(minWidth: 12, minHeight: 12),
-                ),
-              ),
-          ],
-        ),
-        title: Text(
-          otherParticipant.username,
-          style: TextStyle(
-            fontWeight: hasUnread ? FontWeight.bold : FontWeight.normal,
-            color: textColor,
-          ),
-        ),
-        subtitle: Text(
-          lastMessage?.content ?? 'No messages yet',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: widget.isDarkMode ? Colors.grey[400] : Colors.grey[600],
-            fontSize: 12,
-          ),
-        ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            if (lastMessage != null)
-              Text(
-                timeago.format(lastMessage.timestamp),
-                style: TextStyle(
-                  color:
-                      widget.isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                  fontSize: 10,
-                ),
-              ),
-            if (hasUnread)
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  conversation.unreadCount.toString(),
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-          ],
-        ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: hasUnread
+            ? BorderSide(color: Colors.purple.withOpacity(0.5), width: 1)
+            : BorderSide.none,
+      ),
+      child: InkWell(
         onTap: () {
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => DirectChatPage(
-                friendId: otherParticipant.id.toString(),
+                friendId: otherParticipant.id,
                 friendName: otherParticipant.username,
                 isDarkMode: widget.isDarkMode,
-                conversationId: conversation.id.toString(),
+                conversationId: conversation.id,
               ),
             ),
           ).then((_) => _loadConversations());
         },
+        child: Padding(
+          padding: EdgeInsets.all(12),
+          child: Row(
+            children: [
+              // Profile Picture or Initial
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: widget.isDarkMode
+                      ? Colors.purple.withOpacity(0.3)
+                      : Colors.purple.withOpacity(0.1),
+                ),
+                child: otherParticipant.profilePictureUrl != null
+                    ? ClipOval(
+                        child: Image.network(
+                          otherParticipant.profilePictureUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Center(
+                            child: Text(
+                              otherParticipant.username[0].toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w500,
+                                color: widget.isDarkMode
+                                    ? Colors.white
+                                    : Colors.purple,
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                    : Center(
+                        child: Text(
+                          otherParticipant.username[0].toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w500,
+                            color: widget.isDarkMode
+                                ? Colors.white
+                                : Colors.purple,
+                          ),
+                        ),
+                      ),
+              ),
+              SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          otherParticipant.username,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight:
+                                hasUnread ? FontWeight.w600 : FontWeight.w500,
+                            color: textColor,
+                          ),
+                        ),
+                        if (lastMessage != null)
+                          Text(
+                            timeago.format(lastMessage.timestamp),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                      ],
+                    ),
+                    SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            lastMessage?.content ?? 'No messages yet',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: hasUnread ? textColor : Colors.grey,
+                              fontWeight: hasUnread
+                                  ? FontWeight.w500
+                                  : FontWeight.normal,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (hasUnread)
+                          Container(
+                            margin: EdgeInsets.only(left: 8),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.purple,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              conversation.unreadCount.toString(),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

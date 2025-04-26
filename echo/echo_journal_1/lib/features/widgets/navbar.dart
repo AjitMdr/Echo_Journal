@@ -16,6 +16,7 @@ import 'package:echo_journal1/features/home/analytics/analytics_page.dart';
 import 'package:echo_journal1/services/auth/secure_storage_service.dart';
 import 'package:echo_journal1/core/providers/subscription_provider.dart';
 import 'package:echo_journal1/features/subscription/subscription_plans_page.dart';
+import 'package:echo_journal1/features/home/leaderboard/leaderboard_page.dart';
 
 class NavBar extends StatefulWidget {
   const NavBar({super.key});
@@ -110,7 +111,7 @@ class NavBarState extends State<NavBar> {
         Provider.of<SubscriptionProvider>(context, listen: false);
 
     // Check if user is trying to access mood analysis
-    if (index == 2) {
+    if (index == 4) {
       if (!subscriptionProvider.isPremium) {
         Navigator.push(
           context,
@@ -125,9 +126,9 @@ class NavBarState extends State<NavBar> {
   }
 
   void _toggleChatVisibility() {
-    _pageController.jumpToPage(4); // Jump to chat page at index 4
+    _pageController.jumpToPage(5); // Jump to chat page at index 5
     setState(() {
-      _selectedIndex = 4;
+      _selectedIndex = 5;
       _isChatVisible = false; // No longer need this toggle mechanism
       // Refresh unread count when opening chat
       _loadUnreadMessageCount();
@@ -210,21 +211,23 @@ class NavBarState extends State<NavBar> {
                         _buildNavItem(Icons.home, 0, isDarkMode, 'Home'),
                         _buildNavItem(Icons.people, 1, isDarkMode, 'Friends'),
                         _buildNavItem(
+                            Icons.emoji_events, 2, isDarkMode, 'Leaderboard'),
+                        _buildNavItem(
                           Icons.bar_chart,
-                          2,
+                          3,
                           isDarkMode,
                           'Analytics',
                           isPremiumFeature: !subscriptionProvider.isPremium,
                         ),
                         _buildNavItem(
-                          FontAwesomeIcons.faceSmile,
-                          3,
+                          Icons.mood,
+                          4,
                           isDarkMode,
                           'Mood',
                         ),
                         _buildNavItem(
                           Icons.chat,
-                          4,
+                          5,
                           isDarkMode,
                           'Chat',
                           badge: _unreadMessageCount > 0
@@ -233,7 +236,7 @@ class NavBarState extends State<NavBar> {
                         ),
                         _buildNavItem(
                           Icons.menu,
-                          5,
+                          6,
                           isDarkMode,
                           'Menu',
                         ),
@@ -251,6 +254,7 @@ class NavBarState extends State<NavBar> {
                 children: [
                   JournalPage(),
                   FriendsPage(),
+                  LeaderboardPage(),
                   subscriptionProvider.isPremium
                       ? const AnalyticsPage()
                       : const SubscriptionPlansPage(),

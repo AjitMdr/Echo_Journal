@@ -4,8 +4,14 @@ class User {
   final String id;
   final String username;
   final String email;
+  final String? profilePictureUrl;
 
-  User({required this.id, required this.username, required this.email});
+  User({
+    required this.id,
+    required this.username,
+    required this.email,
+    this.profilePictureUrl,
+  });
 
   factory User.fromJson(Map<String, dynamic> json) {
     try {
@@ -13,6 +19,7 @@ class User {
         id: json['id']?.toString() ?? '',
         username: json['username']?.toString() ?? 'Unknown',
         email: json['email']?.toString() ?? '',
+        profilePictureUrl: json['profile_picture_url']?.toString(),
       );
     } catch (e) {
       debugPrint('Error parsing User: $e');
@@ -22,6 +29,11 @@ class User {
   }
 
   Map<String, dynamic> toJson() {
-    return {'id': id, 'username': username, 'email': email};
+    return {
+      'id': id,
+      'username': username,
+      'email': email,
+      'profile_picture_url': profilePictureUrl,
+    };
   }
 }

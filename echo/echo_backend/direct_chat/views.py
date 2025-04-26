@@ -86,7 +86,8 @@ class ConversationViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def recent(self, request):
         conversations = self.get_queryset().order_by('-updated_at')[:10]
-        serializer = self.get_serializer(conversations, many=True)
+        serializer = self.get_serializer(
+            conversations, many=True, context={'request': request})
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'])

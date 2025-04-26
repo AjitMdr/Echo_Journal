@@ -1,4 +1,5 @@
 import 'package:echo_journal1/core/configs/theme/theme-provider.dart';
+import 'package:echo_journal1/features/authentication/pages/forgot_password_page.dart';
 import 'package:echo_journal1/features/authentication/pages/login_page.dart';
 import 'package:echo_journal1/features/widgets/navbar.dart';
 import 'package:flutter/material.dart';
@@ -10,8 +11,10 @@ import 'package:echo_journal1/services/auth/login_service.dart';
 import 'package:echo_journal1/features/home/analytics/analytics_page.dart';
 import 'package:echo_journal1/features/subscription/subscription_plans_page.dart';
 import 'package:echo_journal1/features/settings/account_settings_page.dart';
-import 'core/providers/subscription_provider.dart';
-import 'features/admin/pages/dashboard_page.dart';
+import 'package:echo_journal1/core/providers/subscription_provider.dart';
+import 'package:echo_journal1/features/admin/pages/dashboard_page.dart';
+import 'package:echo_journal1/providers/leaderboard_provider.dart';
+import 'package:echo_journal1/services/streak/streak_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +36,9 @@ void main() async {
         ChangeNotifierProvider(
             create: (_) => ThemeProvider(isDarkMode: isDarkMode)),
         ChangeNotifierProvider(create: (_) => SubscriptionProvider()),
+        ChangeNotifierProvider(
+          create: (_) => LeaderboardProvider(StreakService()),
+        ),
       ],
       child: const MyApp(),
     ),
@@ -113,6 +119,9 @@ class _MyAppState extends State<MyApp> {
             return MaterialPageRoute(builder: (_) => const NavBar());
           case '/login':
             return MaterialPageRoute(builder: (_) => const LoginPage());
+          case '/forgot_password':
+            return MaterialPageRoute(
+                builder: (_) => const ForgotPasswordPage());
           case '/subscription_plans':
             return MaterialPageRoute(
                 builder: (_) => const SubscriptionPlansPage());

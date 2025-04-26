@@ -6,6 +6,7 @@ import 'package:echo_journal1/core/configs/theme/theme-provider.dart';
 import 'package:echo_journal1/features/authentication/pages/reset_password_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:echo_journal1/services/auth/forgot_password_service.dart';
 import 'login_page.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
@@ -37,6 +38,16 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       return;
     }
 
+    // Add email validation
+    final bool emailValid = RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email);
+    if (!emailValid) {
+      setState(() {
+        _errorMessage = 'Please enter a valid email address';
+        _successMessage = '';
+      });
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = '';
@@ -44,36 +55,39 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     });
 
     try {
-      // TODO: Implement forgot password logic
-      // final result = await AuthService.forgotPassword(email);
-      final result = {'success': true}; // Temporary mock response
+      final result = await ForgotPasswordService.requestPasswordResetOTP(email);
 
-      if (result['success'] ?? false) {
-        setState(() {
-          _successMessage = 'OTP sent successfully! Check your email.';
-        });
+      if (mounted) {
+        if (result['success'] == true) {
+          setState(() {
+            _successMessage =
+                result['message'] ?? 'OTP sent successfully! Check your email.';
+          });
 
-        if (mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ResetPasswordPage(email: email),
-            ),
-          );
+          // Wait a moment to show the success message before navigating
+          await Future.delayed(const Duration(seconds: 1));
+
+          if (mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ResetPasswordPage(email: email),
+              ),
+            );
+          }
+        } else {
+          setState(() {
+            _errorMessage = result['error'] ?? 'Failed to send OTP';
+          });
         }
-      } else {
-        setState(() {
-          _errorMessage = result['data'].toString().replaceAll(
-                RegExp(r'[{}]'),
-                '',
-              );
-        });
       }
     } catch (e) {
-      setState(() {
-        _errorMessage = 'An error occurred. Please try again.';
-        _successMessage = '';
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'An error occurred. Please try again.';
+          _successMessage = '';
+        });
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -146,9 +160,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                             labelText: 'Email',
                             hintText: 'Enter your email address',
                             labelStyle: TextStyle(
-                              color: isDarkMode
-                                  ? Colors.white
-                                  : Colors.black, // Change label color
+                              color: isDarkMode ? Colors.white : Colors.black,
                             ),
                             hintStyle: TextStyle(
                               color: isDarkMode
@@ -195,9 +207,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: isDarkMode
                                         ? Colors.grey[800]
-                                        : const Color(
-                                            0xFFFF758C,
-                                          ), // Color changes based on dark mode
+                                        : const Color(0xFFFF758C),
                                     elevation: 3,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(15),
@@ -224,7 +234,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                             "Remembered your password? Login",
                             style: TextStyle(
                               color: isDarkMode
-                                  ? Color.fromARGB(255, 174, 170, 171)
+                                  ? const Color.fromARGB(255, 174, 170, 171)
                                   : const Color(0xFFFF758C),
                               fontWeight: FontWeight.bold,
                             ),

@@ -157,10 +157,13 @@ class _RegisterFormState extends State<RegisterForm> {
                 return 'Please enter your email';
               }
               final emailRegex = RegExp(
-                r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+                r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
               );
               if (!emailRegex.hasMatch(value)) {
                 return 'Please enter a valid email address';
+              }
+              if (value.length > 255) {
+                return 'Email address is too long';
               }
               return null;
             },
@@ -178,8 +181,20 @@ class _RegisterFormState extends State<RegisterForm> {
               if (value.length < 3) {
                 return 'Username must be at least 3 characters';
               }
-              if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(value)) {
-                return 'Username can only contain letters, numbers, and underscores';
+              if (value.length > 30) {
+                return 'Username cannot exceed 30 characters';
+              }
+              if (!RegExp(r'^[a-zA-Z._]+$').hasMatch(value)) {
+                return 'Username can only contain letters, dots, and underscores';
+              }
+              if (value.startsWith('.') ||
+                  value.startsWith('_') ||
+                  value.endsWith('.') ||
+                  value.endsWith('_')) {
+                return 'Username cannot start or end with dots or underscores';
+              }
+              if (value.contains('..') || value.contains('__')) {
+                return 'Username cannot contain consecutive dots or underscores';
               }
               return null;
             },
@@ -199,6 +214,9 @@ class _RegisterFormState extends State<RegisterForm> {
               if (value.length < 8) {
                 return 'Password must be at least 8 characters';
               }
+              if (value.length > 128) {
+                return 'Password cannot exceed 128 characters';
+              }
               if (!RegExp(r'[A-Z]').hasMatch(value)) {
                 return 'Password must contain at least one uppercase letter';
               }
@@ -210,6 +228,9 @@ class _RegisterFormState extends State<RegisterForm> {
               }
               if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(value)) {
                 return 'Password must contain at least one special character';
+              }
+              if (value.contains(RegExp(r'\s'))) {
+                return 'Password cannot contain spaces';
               }
               return null;
             },

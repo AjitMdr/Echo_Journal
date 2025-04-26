@@ -446,58 +446,88 @@ class _AnalyticsPageState extends State<AnalyticsPage>
     final themeColor = Theme.of(context).primaryColor;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mood Analytics', style: TextStyle(fontSize: 16)),
-        centerTitle: true,
-        elevation: 0,
-        toolbarHeight: 48,
-        bottom: TabBar(
-          controller: _tabController,
-          isScrollable: true,
-          tabs:
-              _timeFrames.map((frame) => Tab(text: frame, height: 36)).toList(),
-          labelStyle: TextStyle(fontSize: 14),
-          indicatorWeight: 2,
-          indicatorPadding: EdgeInsets.symmetric(horizontal: 8),
-        ),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _error.isNotEmpty
-              ? Center(
-                  child: Text(
-                    'Error: $_error',
-                    style: TextStyle(color: Colors.red),
-                  ),
-                )
-              : _sentimentData.isEmpty
-                  ? Center(
-                      child: const Text(
-                        'No sentiment data available. Add journals to see analytics.',
+      body: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.only(top: 8),
+            child: Text(
+              'Mood Analytics',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Container(
+            height: 40,
+            child: TabBar(
+              controller: _tabController,
+              tabs: const [
+                Tab(
+                  child: Center(
+                    child: Text(
+                      'Daily',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
                       ),
-                    )
-                  : Column(
-                      children: [
-                        if (_lastDataFetchTime != null) ...[
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8.0,
-                              vertical: 4.0,
-                            ),
+                    ),
+                  ),
+                ),
+                Tab(
+                  child: Center(
+                    child: Text(
+                      'Weekly',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+                Tab(
+                  child: Center(
+                    child: Text(
+                      'Monthly',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+              labelColor: Colors.purple,
+              unselectedLabelColor: Colors.grey,
+              indicatorColor: Colors.purple,
+              indicatorWeight: 2,
+              indicatorSize: TabBarIndicatorSize.label,
+              padding: EdgeInsets.zero,
+              labelPadding: EdgeInsets.zero,
+            ),
+          ),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: Colors.grey.withOpacity(0.2),
+          ),
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _error.isNotEmpty
+                    ? Center(
+                        child: Text(
+                          'Error: $_error',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      )
+                    : _sentimentData.isEmpty
+                        ? const Center(
                             child: Text(
-                              'Last updated: ${DateFormat('MMM d, h:mm a').format(_lastDataFetchTime!)}',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: isDarkMode
-                                    ? Colors.grey[400]
-                                    : Colors.grey[600],
-                                fontStyle: FontStyle.italic,
-                              ),
+                              'No sentiment data available. Add journals to see analytics.',
                             ),
-                          ),
-                        ],
-                        Expanded(
-                          child: TabBarView(
+                          )
+                        : TabBarView(
                             controller: _tabController,
                             children: _timeFrames
                                 .map(
@@ -509,12 +539,11 @@ class _AnalyticsPageState extends State<AnalyticsPage>
                                 )
                                 .toList(),
                           ),
-                        ),
-                      ],
-                    ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          // Directly call forceClearCache to bypass all caching
           await _forceClearCache();
         },
         tooltip: 'Refresh Data',

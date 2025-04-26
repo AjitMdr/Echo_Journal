@@ -5,6 +5,7 @@ import 'package:echo_journal1/utils/toast_helper.dart';
 import 'package:echo_journal1/features/home/chat/direct_chat_page.dart';
 import 'package:echo_journal1/features/widgets/streak_badge_widget.dart';
 import 'package:echo_journal1/services/auth/secure_storage_service.dart';
+import 'package:echo_journal1/core/configs/api_config.dart';
 
 class FriendsListWidget extends StatefulWidget {
   final bool isDarkMode;
@@ -266,14 +267,21 @@ class _FriendsListWidgetState extends State<FriendsListWidget> {
                             child: CircleAvatar(
                               radius: 24,
                               backgroundColor: Colors.blue.shade100,
-                              child: Text(
-                                avatarLetter,
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blue.shade900,
-                                ),
-                              ),
+                              backgroundImage: friend['profile_picture_url'] !=
+                                      null
+                                  ? NetworkImage(
+                                      '${ApiConfig.baseUrl.split('/api')[0]}${friend['profile_picture_url']}')
+                                  : null,
+                              child: friend['profile_picture_url'] == null
+                                  ? Text(
+                                      avatarLetter,
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.blue.shade900,
+                                      ),
+                                    )
+                                  : null,
                             ),
                           ),
                           title: Text(

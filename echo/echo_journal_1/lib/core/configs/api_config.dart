@@ -9,9 +9,9 @@ class ApiConfig {
       if (kIsWeb) {
         return 'http://localhost:8000/api'; // For web
       }
-      return 'http://192.168.1.65:8000/api'; // For Android emulator
+      return 'http://192.168.1.80:8000/api'; // For Android emulator
     }
-    return 'https://production-api.com/api'; // Production URL
+    return 'https://your-production-api.com/api'; // Production URL
   }
 
   static String get wsBaseUrl {
@@ -19,9 +19,9 @@ class ApiConfig {
       if (kIsWeb) {
         return 'ws://localhost:8000'; // For web
       }
-      return 'ws://192.168.1.65:8000'; // For Android emulator
+      return 'ws://192.168.1.80:8000'; // For Android emulator
     }
-    return 'wss://production-api.com'; // Production URL
+    return 'wss://your-production-api.com'; // Production URL
   }
 
   // Auth endpoints (without leading slash)

@@ -234,4 +234,64 @@ class AuthService {
   static Future<String?> getToken() async {
     return await SecureStorageService.getAccessToken();
   }
+
+  /// Change user's password
+  static Future<Map<String, dynamic>> changePassword(
+    String currentPassword,
+    String newPassword,
+  ) async {
+    try {
+      final token = await getToken();
+      if (token == null) {
+        return {
+          'success': false,
+          'error': 'Not authenticated',
+        };
+      }
+
+      final url = ApiConfig.getFullUrl('$_authPrefix/profile/password/');
+      final response = await http.put(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'current_password': currentPassword,
+          'new_password': newPassword,
+        }),
+      );
+
+      final data = json.decode(response.body);
+
+      if (response.statusCode == 200) {
+        // Save new tokens if provided
+        if (data['refresh'] != null && data['access'] != null) {
+          await SecureStorageService.saveAuthData(
+            accessToken: data['access'],
+            refreshToken: data['refresh'],
+            userId: (await SecureStorageService.getUserId())!,
+            username: (await SecureStorageService.getUsername())!,
+            email: (await SecureStorageService.getUserEmail())!,
+          );
+        }
+
+        return {
+          'success': true,
+          'message': data['message'] ?? 'Password updated successfully',
+        };
+      } else {
+        return {
+          'success': false,
+          'error': data['error'] ?? 'Failed to change password',
+        };
+      }
+    } catch (e) {
+      debugPrint('Error changing password: $e');
+      return {
+        'success': false,
+        'error': 'An error occurred while changing password',
+      };
+    }
+  }
 }
