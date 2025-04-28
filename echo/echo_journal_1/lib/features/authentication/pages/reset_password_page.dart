@@ -1,11 +1,7 @@
 import 'dart:async';
-import 'package:echo_journal1/core/configs/theme/gradient-bg-pattern.dart';
-import 'package:echo_journal1/core/configs/theme/theme-provider.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'login_page.dart';
 import 'package:echo_journal1/utils/toast_helper.dart';
-import 'package:echo_journal1/common/widgets/error_message.dart';
 import 'package:echo_journal1/services/auth/forgot_password_service.dart';
 import 'package:flutter/services.dart';
 

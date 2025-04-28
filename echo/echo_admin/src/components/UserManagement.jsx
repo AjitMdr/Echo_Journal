@@ -119,13 +119,7 @@ const UserManagement = () => {
           icon={UserGroupIcon}
           color="green"
         />
-        {/* <MetricCard
-          title="Retention Rate"
-          value={`${analytics?.retention_metrics?.login_retention_rate || 0}%`}
-          subtitle="User retention rate"
-          icon={ChartBarIcon}
-          color="purple"
-        /> */}
+      
         <MetricCard
           title="Engagement Rate"
           value={`${analytics?.retention_metrics?.engagement_rate || 0}%`}

@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import get_user_model
 from django.db.models import Q
+from django.utils import timezone  # Added import for timezone
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -18,7 +19,14 @@ class ConversationViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Conversation.objects.filter(participants=self.request.user)
+        return Conversation.objects.filter(participants=self.request.user).order_by('-updated_at')
+    
+    def get_object(self):
+        # Override get_object to ensure the user is a participant
+        obj = super().get_object()
+        if self.request.user not in obj.participants.all():
+            self.permission_denied(self.request, message="You are not a participant in this conversation")
+        return obj
 
     def create(self, request):
         # Get or create a conversation between the current user and the specified user
@@ -37,7 +45,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
 
         # Create a new conversation
-        conversation = Conversation.objects.create()
+        conversation = Conversation.objects.create(updated_at=timezone.now())
         conversation.participants.add(request.user, other_user)
 
         serializer = self.get_serializer(conversation)
@@ -46,6 +54,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'])
     def messages(self, request, pk=None):
         conversation = self.get_object()
+        # At this point, we've already verified the user is a participant via get_object()
         messages = conversation.get_messages()
 
         # Mark messages as read
@@ -78,7 +87,8 @@ class ConversationViewSet(viewsets.ModelViewSet):
         )
 
         # Update the conversation's updated_at timestamp
-        conversation.save()
+        conversation.updated_at = timezone.now()
+        conversation.save(update_fields=['updated_at'])
 
         serializer = DirectMessageSerializer(message)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -88,6 +98,23 @@ class ConversationViewSet(viewsets.ModelViewSet):
         conversations = self.get_queryset().order_by('-updated_at')[:10]
         serializer = self.get_serializer(
             conversations, many=True, context={'request': request})
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def all_active(self, request):
+        """Get all conversations that have at least one message"""
+        user = request.user
+        
+        # Get all conversations where the user is a participant
+        conversations = Conversation.objects.filter(participants=user).order_by('-updated_at')
+        
+        # Filter to include only conversations with messages
+        conversations_with_messages = []
+        for conversation in conversations:
+            if DirectMessage.objects.filter(conversation=conversation).exists():
+                conversations_with_messages.append(conversation)
+        
+        serializer = self.get_serializer(conversations_with_messages, many=True, context={'request': request})
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'])
@@ -130,12 +157,51 @@ class DirectMessageViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        # Ensure users only see messages they're authorized to see
         return DirectMessage.objects.filter(
             Q(sender=self.request.user) | Q(receiver=self.request.user)
         ).order_by('timestamp')
 
     def perform_create(self, serializer):
         serializer.save(sender=self.request.user)
+    
+    def create(self, request, *args, **kwargs):
+        receiver_id = request.data.get('receiver_id')
+        content = request.data.get('content')
+        
+        if not receiver_id or not content:
+            return Response(
+                {"error": "Both receiver_id and content are required"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        receiver = get_object_or_404(User, id=receiver_id)
+        
+        # Check if a conversation already exists
+        conversations = Conversation.objects.filter(
+            participants=request.user).filter(participants=receiver)
+            
+        if conversations.exists():
+            conversation = conversations.first()
+        else:
+            # Create a new conversation if none exists
+            conversation = Conversation.objects.create(updated_at=timezone.now())
+            conversation.participants.add(request.user, receiver)
+        
+        # Create the message
+        message = DirectMessage.objects.create(
+            sender=request.user,
+            receiver=receiver,
+            content=content,
+            conversation=conversation
+        )
+        
+        # Update the conversation's timestamp explicitly
+        conversation.updated_at = timezone.now()
+        conversation.save(update_fields=['updated_at'])
+        
+        serializer = self.get_serializer(message)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=['get'])
     def with_user(self, request):
@@ -144,15 +210,42 @@ class DirectMessageViewSet(viewsets.ModelViewSet):
             return Response({"error": "user_id query parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         other_user = get_object_or_404(User, id=user_id)
-
+        
+        # Check if a conversation exists between these users
+        conversations = Conversation.objects.filter(
+            participants=request.user).filter(participants=other_user)
+            
+        # If no conversation exists yet, check if there are any direct messages between these users
+        if not conversations.exists():
+            # Check if there are any messages between these users
+            messages_exist = DirectMessage.objects.filter(
+                Q(sender=request.user, receiver=other_user) | 
+                Q(sender=other_user, receiver=request.user)
+            ).exists()
+            
+            # If messages exist or if explicitly requested, create a conversation
+            if messages_exist or request.query_params.get('create_conversation', 'false').lower() == 'true':
+                conversation = Conversation.objects.create(updated_at=timezone.now())
+                conversation.participants.add(request.user, other_user)
+                conversations = Conversation.objects.filter(id=conversation.id)
+            else:
+                return Response([])  # Return empty array if no messages and no conversation requested
+        
+        # At this point, we should have a conversation
+        conversation = conversations.first()
+        
+        # Get messages for this conversation
         messages = DirectMessage.objects.filter(
-            (Q(sender=request.user) & Q(receiver=other_user)) |
-            (Q(sender=other_user) & Q(receiver=request.user))
+            conversation=conversation
         ).order_by('timestamp')
 
         # Mark messages as read
         DirectMessage.objects.filter(
-            sender=other_user, receiver=request.user, is_read=False).update(is_read=True)
+            conversation=conversation,
+            sender=other_user, 
+            receiver=request.user, 
+            is_read=False
+        ).update(is_read=True)
 
         serializer = self.get_serializer(messages, many=True)
         return Response(serializer.data)
@@ -162,6 +255,31 @@ class DirectMessageViewSet(viewsets.ModelViewSet):
         count = DirectMessage.objects.filter(
             receiver=request.user, is_read=False).count()
         return Response({"unread_count": count})
+        
+    @action(detail=False, methods=['get'])
+    def recent_conversations(self, request):
+        """Get all conversations that have at least one message involving the current user"""
+        user = request.user
+        
+        # Get all messages sent by or to the current user
+        messages = DirectMessage.objects.filter(
+            Q(sender=user) | Q(receiver=user)
+        ).select_related('conversation').order_by('-timestamp')
+        
+        # Extract unique conversations from these messages
+        conversation_ids = set()
+        conversations = []
+        
+        for message in messages:
+            if message.conversation_id and message.conversation_id not in conversation_ids:
+                conversation_ids.add(message.conversation_id)
+                conversations.append(message.conversation)
+        
+        # Sort conversations by their updated_at timestamp
+        conversations.sort(key=lambda x: x.updated_at, reverse=True)
+        
+        serializer = ConversationSerializer(conversations, many=True, context={'request': request})
+        return Response(serializer.data)
 
 
 def check_websocket_path(request, test_path):

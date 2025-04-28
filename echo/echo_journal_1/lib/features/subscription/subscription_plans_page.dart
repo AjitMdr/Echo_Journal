@@ -220,7 +220,7 @@ class _SubscriptionPlansPageState extends State<SubscriptionPlansPage> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '\$${plan.price.toStringAsFixed(2)}',
+                    '\Rs ${plan.price.toStringAsFixed(2)}',
                     style: const TextStyle(
                       fontSize: 36,
                       fontWeight: FontWeight.bold,

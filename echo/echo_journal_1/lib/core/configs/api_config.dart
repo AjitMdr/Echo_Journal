@@ -9,7 +9,7 @@ class ApiConfig {
       if (kIsWeb) {
         return 'http://localhost:8000/api'; // For web
       }
-      return 'http://192.168.1.80:8000/api'; // For Android emulator
+      return 'http://192.168.1.73:8000/api'; // For Android emulator
     }
     return 'https://your-production-api.com/api'; // Production URL
   }
@@ -19,7 +19,7 @@ class ApiConfig {
       if (kIsWeb) {
         return 'ws://localhost:8000'; // For web
       }
-      return 'ws://192.168.1.80:8000'; // For Android emulator
+      return 'ws://192.168.1.73:8000'; // For Android emulator
     }
     return 'wss://your-production-api.com'; // Production URL
   }

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:echo_journal1/providers/leaderboard_provider.dart';
-import 'package:echo_journal1/widgets/circular_profile.dart';
-import 'package:echo_journal1/models/user.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class LeaderboardPage extends StatefulWidget {

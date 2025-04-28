@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:echo_journal1/services/auth/login_service.dart';
-import 'package:echo_journal1/core/configs/theme/app-styles.dart';
 import 'package:echo_journal1/features/widgets/navbar.dart';
 import 'package:echo_journal1/services/auth/session_management.dart';
 import 'package:echo_journal1/core/configs/theme/gradient-bg-pattern.dart';

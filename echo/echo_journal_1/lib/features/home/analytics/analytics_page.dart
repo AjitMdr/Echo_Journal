@@ -7,8 +7,6 @@ import 'package:echo_journal1/core/configs/theme/theme-provider.dart';
 import 'package:echo_journal1/utils/toast_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import 'package:echo_journal1/features/widgets/navbar.dart';
-import 'package:echo_journal1/core/configs/api_config.dart';
 import 'package:echo_journal1/core/providers/subscription_provider.dart';
 
 class AnalyticsPage extends StatefulWidget {

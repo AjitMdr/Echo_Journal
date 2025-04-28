@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: "http://100.64.193.236:8000", // Django backend URL
+  baseURL: "http://192.168.1.73:8000", // Django backend URL
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -36,7 +36,7 @@ instance.interceptors.response.use(
         // Try to refresh the token
         const refreshToken = localStorage.getItem("refresh_token");
         const response = await axios.post(
-          "http://100.64.193.236:8000/api/token/refresh/",
+          "http://192.168.1.73:8000/api/token/refresh/",
           {
             refresh: refreshToken,
           }

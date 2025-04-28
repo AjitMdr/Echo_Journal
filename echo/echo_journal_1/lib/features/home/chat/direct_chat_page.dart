@@ -3,7 +3,6 @@ import 'package:echo_journal1/data/models/direct_message.dart';
 import 'package:echo_journal1/features/home/chat/widgets/message_bubble.dart';
 import 'package:echo_journal1/services/chat/chat_service.dart';
 import 'package:echo_journal1/services/auth/secure_storage_service.dart';
-import 'package:echo_journal1/utils/toast_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:echo_journal1/core/configs/api_config.dart';
 

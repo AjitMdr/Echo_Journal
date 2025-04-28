@@ -65,6 +65,7 @@ class Conversation {
         participantsList.addAll(
           (json['participants'] as List)
               .map((p) => Participant.fromJson(p))
+              // ignore: unnecessary_null_comparison
               .where((p) => p != null)
               .toList(),
         );

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:echo_journal1/services/friends/friends_service.dart';
-import 'package:echo_journal1/features/home/friends/widgets/friend_card.dart';
 import 'package:echo_journal1/utils/toast_helper.dart';
 import 'package:echo_journal1/features/home/chat/direct_chat_page.dart';
 import 'package:echo_journal1/features/home/friends/widgets/user_search.dart';

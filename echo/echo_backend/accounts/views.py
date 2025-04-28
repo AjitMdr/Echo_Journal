@@ -87,7 +87,7 @@ from django.core.management.utils import get_random_secret_key
 
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
-from .models import Streak, Badge, UserBadge
+from .models import Friendship, Streak, Badge, UserBadge
 from .serializers import StreakSerializer, BadgeSerializer, UserBadgeSerializer
 
 import threading

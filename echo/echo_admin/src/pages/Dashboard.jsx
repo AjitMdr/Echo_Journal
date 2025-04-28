@@ -22,7 +22,7 @@ ChartJS.register(
   Legend
 );
 
-const API_BASE_URL = "http://100.64.193.236:8000";
+const API_BASE_URL = "http://192.168.1.73:8000";
 
 // Add print styles
 const printStyles = `
@@ -315,19 +315,6 @@ const Dashboard = () => {
 
       {/* Analytics Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Subscription Analytics */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4">Subscription Analytics</h3>
-          <div className="space-y-4">
-            {subscriptionAnalytics?.plan_distribution?.map((plan, index) => (
-              <div key={index} className="flex justify-between items-center">
-                <span className="text-gray-600">{plan.plan__name}</span>
-                <span className="font-semibold">{plan.count} users</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* User Analytics */}
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold mb-4">User Analytics</h3>

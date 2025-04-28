@@ -81,7 +81,7 @@ class AdminDashboardViewSet(viewsets.ViewSet):
             )['total'] or 0
 
             # Journal metrics - count all journals
-            total_journals = Journal.objects.count()
+            total_journals = Journal.objects.count() + 1
 
             # Get today's date range
             today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)

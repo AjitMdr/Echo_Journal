@@ -6,7 +6,7 @@ import {
 } from "@heroicons/react/24/outline";
 import axios from "axios";
 
-const API_BASE_URL = "http://100.64.193.236:8000";
+const API_BASE_URL = "http://192.168.1.73:8000";
 
 const Transactions = () => {
   const [transactions, setTransactions] = useState([]);

@@ -1,4 +1,4 @@
-export const API_BASE_URL = "http://100.64.193.236:8000/api";
+export const API_BASE_URL = "http://192.168.1.73:8000/api";
 
 export const ENDPOINTS = {
   ADMIN: {

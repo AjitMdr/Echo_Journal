@@ -180,9 +180,7 @@ class FriendRequestViewSet(viewsets.ModelViewSet):
             }, status=status.HTTP_403_FORBIDDEN)
 
         # Update request status
-        friend_request.status = 'rejected'
-        friend_request.save()
-
+        friend_request.delete()
         return Response({
             'status': 'success',
             'message': 'Friend request rejected'

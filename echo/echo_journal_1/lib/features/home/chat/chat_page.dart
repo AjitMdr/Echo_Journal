@@ -1,10 +1,7 @@
 import 'package:echo_journal1/core/configs/theme/curved-pattern.dart';
 import 'package:echo_journal1/features/home/chat/conversations_page.dart';
 import 'package:echo_journal1/services/chat/chat_service.dart';
-import 'package:echo_journal1/utils/toast_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:echo_journal1/core/configs/theme/theme-provider.dart';
 import 'package:echo_journal1/features/widgets/navbar.dart';
 
 class ChatPage extends StatefulWidget {
